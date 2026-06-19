@@ -8,11 +8,18 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { RolesGuard } from './auth/roles.guard';
 import { AuditInterceptor } from './audit/audit.interceptor';
+import { StorageModule } from './storage/storage.module';
+import { QueueModule } from './queue/queue.module';
 import { ClientsModule } from './clients/clients.module';
 import { ExercisesModule } from './exercises/exercises.module';
+import { AssessmentsModule } from './assessments/assessments.module';
+import { GoalsModule } from './goals/goals.module';
 import { ProgramsModule } from './programs/programs.module';
 import { NutritionModule } from './nutrition/nutrition.module';
 import { RecoveryModule } from './recovery/recovery.module';
+import { BloodworkModule } from './bloodwork/bloodwork.module';
+import { ProgressModule } from './progress/progress.module';
+import { ReportsModule } from './reports/reports.module';
 import { HealthModule } from './health/health.module';
 
 @Module({
@@ -32,12 +39,19 @@ import { HealthModule } from './health/health.module';
     ]),
     PrismaModule,
     AuthModule,
+    StorageModule,
+    QueueModule,
     HealthModule,
     ClientsModule,
     ExercisesModule,
+    AssessmentsModule,
+    GoalsModule,
     ProgramsModule,
     NutritionModule,
     RecoveryModule,
+    BloodworkModule,
+    ProgressModule,
+    ReportsModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

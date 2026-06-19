@@ -9,6 +9,7 @@ import { analyzeGoal } from './goal-analysis';
 import { filterExercises } from './rule-engine';
 import { buildPeriodization } from './periodization';
 import { buildWeek } from './program-builder';
+import { getSportProtocol } from './sport-performance';
 
 export interface GenerateProgramOptions {
   assessment: AssessmentInput;
@@ -48,9 +49,12 @@ export function generateProgram(opts: GenerateProgramOptions): ProgramPlan {
   // 3. Periodization skeleton
   const skeleton = buildPeriodization(periodization, durationWeeks);
 
+  // Sport performance protocol (Module 7) — sport-specific conditioning blocks.
+  const sportBlocks = getSportProtocol(goal.sport).blocks;
+
   // 4 + 5. Exercise selection + program builder per week
   const weeks = skeleton.map((wk) =>
-    buildWeek(wk, daysPerWeek, candidates, prescription, seed),
+    buildWeek(wk, daysPerWeek, candidates, prescription, seed, sportBlocks),
   );
 
   return {

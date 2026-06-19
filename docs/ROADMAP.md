@@ -32,9 +32,12 @@ A phased plan from foundation to production. Each phase ends with a deployable, 
 - [ ] Shared UI package (shadcn/ui)
 
 ## Phase 3 — Client, Assessment, Exercise library
-- [ ] Clients CRUD + documents + messaging + notes
-- [ ] Assessment intake forms + versioning
-- [ ] Exercise library CRUD + filtering API + 1000+ ETL importer
+- [x] Clients CRUD (+ ownership-scoped access) — `clients` module
+- [x] Assessment intake (versioned) + DTO validation — `assessments` module
+- [x] Goals — `goals` module
+- [x] Exercise library filtering API — `exercises` module
+- [ ] Documents + messaging + notes endpoints
+- [ ] Exercise library 1000+ ETL importer
 
 ## Phase 4 — Generation engines
 - [x] Nutrition engine (BMR/TDEE/macros/meals) — implemented in `services/nutrition-engine`
@@ -45,9 +48,12 @@ A phased plan from foundation to production. Each phase ends with a deployable, 
 - [ ] Wire engines to backend modules + persistence
 
 ## Phase 5 — Reports, dashboards, progress
-- [ ] Progress tracking module + charts
-- [ ] React PDF report templates (`services/report-engine`)
-- [ ] Async report generation via BullMQ → object storage
+- [x] Progress tracking module (+ summary aggregation) — `progress` module
+- [x] Bloodwork analysis engine + module (educational, never diagnostic)
+- [x] React PDF report templates (`services/report-engine`)
+- [x] Async report generation via BullMQ → S3-compatible object storage
+- [x] S3-compatible storage service (presigned upload/download, ArvanCloud)
+- [ ] Frontend dashboards + charts
 
 ## Phase 6 — AI personalization
 - [ ] Claude integration (`services/ai`): explanation layer, report copy, messaging

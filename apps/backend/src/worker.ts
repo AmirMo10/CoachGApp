@@ -6,6 +6,7 @@
 import { Worker, type ConnectionOptions } from 'bullmq';
 import { PrismaClient } from '@prisma/client';
 import { renderReportPdf, ReportData } from '@coachg/report-engine';
+import { StorageService } from './storage/storage.service';
 
 const connection: ConnectionOptions = {
   host: process.env.REDIS_HOST ?? 'localhost',
@@ -14,12 +15,8 @@ const connection: ConnectionOptions = {
 };
 
 const prisma = new PrismaClient();
-
-// NOTE: object-storage upload is abstracted; wire to ArvanCloud S3 client here.
-async function uploadPdf(key: string, _buffer: Buffer): Promise<string> {
-  // TODO(Phase 5): use @aws-sdk/client-s3 against S3_ENDPOINT (ArvanCloud).
-  return key;
-}
+// StorageService has no DI dependencies, so it can be used outside the Nest context.
+const storage = new StorageService();
 
 new Worker(
   'reports',
@@ -28,7 +25,7 @@ new Worker(
     await prisma.report.update({ where: { id: reportId }, data: { status: 'PROCESSING' } });
     try {
       const pdf = await renderReportPdf(data);
-      const key = await uploadPdf(`reports/${reportId}.pdf`, pdf);
+      const key = await storage.putObject(`reports/${reportId}.pdf`, pdf, 'application/pdf');
       await prisma.report.update({
         where: { id: reportId },
         data: { status: 'READY', objectKey: key },

@@ -17,7 +17,10 @@
     "seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.620.0",
+    "@aws-sdk/s3-request-presigner": "^3.620.0",
     "@coachg/ai": "workspace:*",
+    "@coachg/bloodwork-engine": "workspace:*",
     "@coachg/nutrition-engine": "workspace:*",
     "@coachg/program-generator": "workspace:*",
     "@coachg/recovery-engine": "workspace:*",

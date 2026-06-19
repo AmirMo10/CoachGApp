@@ -46,6 +46,7 @@ Coach"G" helps coaches scale their business by automatically generating **profes
   /program-generator   Rule engine + program builder
   /nutrition-engine    BMR/TDEE/macros calculators
   /recovery-engine     Sleep/hydration/mobility/deload logic
+  /bloodwork-engine    Educational bloodwork insights (never diagnostic)
   /report-engine       React PDF report generation
 /infrastructure
   /docker              Dockerfiles & compose files

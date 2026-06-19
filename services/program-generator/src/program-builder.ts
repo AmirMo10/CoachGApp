@@ -56,6 +56,8 @@ export function buildWeek(
   candidates: ExerciseDTO[],
   prescription: TrainingPrescription,
   seedBase: number,
+  /** Sport-specific conditioning blocks (Module 7); empty for non-sport goals. */
+  sportBlocks: string[] = [],
 ): ProgramWeekPlan {
   const focusLabels = SPLITS[daysPerWeek] ?? SPLITS[4]!;
   const days: ProgramDayPlan[] = [];
@@ -64,12 +66,21 @@ export function buildWeek(
     // Seed combines week + day so selection is reproducible yet varied.
     const seed = seedBase + skeleton.weekIndex * 100 + d;
     const exercises = selectExercisesForDay(candidates, prescription, EXERCISES_PER_DAY, seed);
+
+    let conditioning: string[] | undefined;
+    if (skeleton.isDeload) {
+      conditioning = ['Light Zone-2 cardio 15 min'];
+    } else if (sportBlocks.length > 0) {
+      // Rotate one sport block per day so qualities are distributed across the week.
+      conditioning = [sportBlocks[(skeleton.weekIndex + d) % sportBlocks.length]!];
+    }
+
     days.push({
       dayIndex: d + 1,
       focus: focusLabels[d % focusLabels.length]!,
       warmup: ['5 min easy cardio', 'Dynamic mobility for target areas', '2 ramp-up sets'],
       exercises: buildExercisePrescriptions(exercises, prescription, skeleton),
-      conditioning: skeleton.isDeload ? ['Light Zone-2 cardio 15 min'] : undefined,
+      conditioning,
     });
   }
 
