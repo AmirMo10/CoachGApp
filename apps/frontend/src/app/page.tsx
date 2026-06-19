@@ -15,7 +15,7 @@ export default function Home() {
         <span className="text-2xl font-bold">
           Coach<span className="text-brand">&quot;G&quot;</span>
         </span>
-        <Link href="/coach">
+        <Link href="/login">
           <Button>Coach Login</Button>
         </Link>
       </header>
@@ -30,7 +30,7 @@ export default function Home() {
           and explains.
         </p>
         <div className="mt-8 flex justify-center gap-4">
-          <Link href="/coach">
+          <Link href="/login">
             <Button size="lg">Get Started</Button>
           </Link>
           <a href="https://code.claude.com/docs" target="_blank" rel="noreferrer">
