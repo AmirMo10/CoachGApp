@@ -1,0 +1,19 @@
+import { Global, Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+import { AuthService } from './auth.service';
+import { AuthController } from './auth.controller';
+
+@Global()
+@Module({
+  imports: [
+    JwtModule.register({
+      global: true,
+      secret: process.env.JWT_SECRET ?? 'dev-only-change-me',
+      signOptions: { expiresIn: process.env.JWT_EXPIRES_IN ?? '15m' },
+    }),
+  ],
+  controllers: [AuthController],
+  providers: [AuthService],
+  exports: [AuthService, JwtModule],
+})
+export class AuthModule {}

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2022"],
+    "declaration": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "incremental": true
+    // Workspace packages resolve via node_modules to each other's built `dist`
+    // (main/types point there). Turbo's `^build` guarantees dependency build
+    // order, so consumers always see up-to-date declaration files.
+  },
+  "exclude": ["node_modules", "dist", ".next"]
+}

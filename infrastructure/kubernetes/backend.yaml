@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: coachg
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: backend }
+  template:
+    metadata:
+      labels: { app: backend }
+    spec:
+      containers:
+        - name: backend
+          image: registry.arvancloud.ir/coachg/backend:latest
+          ports: [{ containerPort: 4000 }]
+          envFrom:
+            - configMapRef: { name: coachg-config }
+            - secretRef: { name: coachg-secrets }
+          readinessProbe:
+            httpGet: { path: /api/v1/health, port: 4000 }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /api/v1/health, port: 4000 }
+            initialDelaySeconds: 20
+            periodSeconds: 20
+          resources:
+            requests: { cpu: '250m', memory: '256Mi' }
+            limits: { cpu: '1', memory: '512Mi' }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: coachg
+spec:
+  selector: { app: backend }
+  ports: [{ port: 4000, targetPort: 4000 }]
+---
+# Independently-scaled BullMQ worker pool.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+  namespace: coachg
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: worker }
+  template:
+    metadata:
+      labels: { app: worker }
+    spec:
+      containers:
+        - name: worker
+          image: registry.arvancloud.ir/coachg/backend:latest
+          command: ['node', 'dist/worker.js']
+          envFrom:
+            - configMapRef: { name: coachg-config }
+            - secretRef: { name: coachg-secrets }
+          resources:
+            requests: { cpu: '250m', memory: '256Mi' }
+            limits: { cpu: '1', memory: '1Gi' }
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: backend-hpa
+  namespace: coachg
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: backend
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target: { type: Utilization, averageUtilization: 70 }
