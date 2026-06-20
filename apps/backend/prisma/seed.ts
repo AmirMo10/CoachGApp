@@ -210,6 +210,37 @@ async function main() {
     },
   });
 
+  // Client login linked to the demo client profile
+  const clientUser = await prisma.user.upsert({
+    where: { email: 'client@coachg.dev' },
+    update: { passwordHash: hash('password123') },
+    create: {
+      email: 'client@coachg.dev',
+      role: Role.CLIENT,
+      firstName: 'Alex',
+      lastName: 'Athlete',
+      passwordHash: hash('password123'),
+    },
+  });
+  await prisma.clientProfile.update({
+    where: { id: client.id },
+    data: { userId: clientUser.id },
+  });
+
+  // Admin login
+  const adminUser = await prisma.user.upsert({
+    where: { email: 'admin@coachg.dev' },
+    update: { passwordHash: hash('password123') },
+    create: {
+      email: 'admin@coachg.dev',
+      role: Role.ADMIN,
+      firstName: 'Site',
+      lastName: 'Admin',
+      passwordHash: hash('password123'),
+    },
+  });
+  console.log(`Seeded logins: ${clientUser.email} (CLIENT), ${adminUser.email} (ADMIN)`);
+
   console.log(`Seeded coach=${coachUser.email}, client=${client.firstName} ${client.lastName}`);
   console.log(`Exercises in library: ${await prisma.exercise.count()}`);
 }

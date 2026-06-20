@@ -22,6 +22,8 @@ import { Avatar } from '@/components/brand';
 import { PageLoader, Spinner } from '@/components/ui/spinner';
 import { LineChart } from '@/components/ui/line-chart';
 import { LineChart as LineIcon } from 'lucide-react';
+import { Tabs } from '@/components/ui/tabs';
+import { BloodworkPanel, MessagesPanel, DocumentsPanel, NotesPanel } from '@/components/panels';
 
 export default function ClientDetailPage({ params }: { params: { id: string } }) {
   const { id } = params;
@@ -344,6 +346,16 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
           />
         </CardContent>
       </Card>
+
+      {/* Bloodwork / Messages / Documents / Notes */}
+      <Tabs
+        items={[
+          { key: 'bloodwork', label: 'Bloodwork', content: <BloodworkPanel clientId={id} canAdd /> },
+          { key: 'messages', label: 'Messages', content: <MessagesPanel clientId={id} role="COACH" /> },
+          { key: 'documents', label: 'Documents', content: <DocumentsPanel clientId={id} /> },
+          { key: 'notes', label: 'Notes', content: <NotesPanel clientId={id} /> },
+        ]}
+      />
     </div>
   );
 }

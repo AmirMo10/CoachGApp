@@ -228,4 +228,95 @@ export const Api = {
     }),
   report: (reportId: string) =>
     api<{ id: string; status: string; downloadUrl: string | null }>(`/reports/${reportId}`),
+
+  // Exercise library
+  exercises: (filter: Record<string, string> = {}) => {
+    const qs = new URLSearchParams(Object.entries(filter).filter(([, v]) => v)).toString();
+    return api<Exercise[]>(`/exercises${qs ? `?${qs}` : ''}`);
+  },
+
+  // Bloodwork
+  bloodwork: (clientId: string) => api<BloodworkPanel[]>(`/clients/${clientId}/bloodwork`),
+  addBloodwork: (clientId: string, body: AddBloodworkBody) =>
+    api<BloodworkPanel>(`/clients/${clientId}/bloodwork`, { method: 'POST', body: JSON.stringify(body) }),
+
+  // Messaging
+  messages: (clientId: string) => api<Message[]>(`/clients/${clientId}/messages`),
+  sendMessage: (clientId: string, body: string) =>
+    api<Message>(`/clients/${clientId}/messages`, { method: 'POST', body: JSON.stringify({ body }) }),
+  draftReply: (clientId: string) =>
+    api<{ draft: string; aiGenerated: boolean }>(`/clients/${clientId}/messages/draft`, { method: 'POST' }),
+
+  // Notes (coach)
+  notes: (clientId: string) => api<Note[]>(`/clients/${clientId}/notes`),
+  addNote: (clientId: string, body: string) =>
+    api<Note>(`/clients/${clientId}/notes`, { method: 'POST', body: JSON.stringify({ body }) }),
+
+  // Documents
+  documents: (clientId: string) => api<DocumentMeta[]>(`/clients/${clientId}/documents`),
+
+  // Admin
+  adminAnalytics: () =>
+    api<{
+      totals: { coaches: number; clients: number; programs: number; users: number };
+      clientsByWeek: { label: string; count: number }[];
+    }>('/admin/analytics'),
+  adminCoaches: () =>
+    api<
+      { id: string; businessName?: string; email: string; name: string; isActive: boolean; clientCount: number }[]
+    >('/admin/coaches'),
 };
+
+export interface Exercise {
+  id: string;
+  name: string;
+  equipment: string[];
+  primaryMuscles: string[];
+  movementPattern: string;
+  difficulty: string;
+  sportTransferTags: string[];
+}
+
+export interface BloodMarker {
+  id: string;
+  type: string;
+  value: number;
+  unit: string;
+  referenceLow?: number | null;
+  referenceHigh?: number | null;
+  flag: 'LOW' | 'NORMAL' | 'HIGH';
+  insight?: string | null;
+}
+export interface BloodworkPanel {
+  id: string;
+  panelDate: string;
+  lab?: string | null;
+  notes?: string | null;
+  markers: BloodMarker[];
+}
+export interface AddBloodworkBody {
+  lab?: string;
+  notes?: string;
+  markers: { type: string; value: number }[];
+}
+
+export interface Message {
+  id: string;
+  senderRole: 'ADMIN' | 'COACH' | 'CLIENT';
+  body: string;
+  createdAt: string;
+}
+
+export interface Note {
+  id: string;
+  body: string;
+  createdAt: string;
+}
+
+export interface DocumentMeta {
+  id: string;
+  name: string;
+  mimeType: string;
+  sizeBytes: number;
+  createdAt: string;
+}
