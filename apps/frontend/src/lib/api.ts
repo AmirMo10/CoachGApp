@@ -254,6 +254,15 @@ export const Api = {
 
   // Documents
   documents: (clientId: string) => api<DocumentMeta[]>(`/clients/${clientId}/documents`),
+  presignDocument: (clientId: string, fileName: string, mimeType: string) =>
+    api<{ key: string; url: string }>(`/clients/${clientId}/documents/presign`, {
+      method: 'POST',
+      body: JSON.stringify({ fileName, mimeType }),
+    }),
+  recordDocument: (
+    clientId: string,
+    body: { name: string; objectKey: string; mimeType: string; sizeBytes: number },
+  ) => api<DocumentMeta>(`/clients/${clientId}/documents`, { method: 'POST', body: JSON.stringify(body) }),
 
   // Admin
   adminAnalytics: () =>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Send, Sparkles, FileText, Plus, FlaskConical } from 'lucide-react';
 import { Api } from '@/lib/api';
@@ -223,17 +223,67 @@ export function NotesPanel({ clientId }: { clientId: string }) {
 }
 
 // ── Documents ──
-export function DocumentsPanel({ clientId }: { clientId: string }) {
+const ACCEPTED = 'image/jpeg,image/png,image/webp,application/pdf';
+
+export function DocumentsPanel({ clientId, canUpload = false }: { clientId: string; canUpload?: boolean }) {
+  const qc = useQueryClient();
   const docs = useQuery({ queryKey: ['documents', clientId], queryFn: () => Api.documents(clientId) });
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const upload = useMutation({
+    mutationFn: async (file: File) => {
+      // 1) presign → 2) PUT bytes directly to object storage → 3) record metadata
+      const { key, url } = await Api.presignDocument(clientId, file.name, file.type);
+      const put = await fetch(url, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } });
+      if (!put.ok) throw new Error(`Upload failed (${put.status}). Check storage CORS/credentials.`);
+      return Api.recordDocument(clientId, {
+        name: file.name,
+        objectKey: key,
+        mimeType: file.type,
+        sizeBytes: file.size,
+      });
+    },
+    onSuccess: () => {
+      setError(null);
+      if (fileRef.current) fileRef.current.value = '';
+      qc.invalidateQueries({ queryKey: ['documents', clientId] });
+    },
+    onError: (e) => setError(e instanceof Error ? e.message : 'Upload failed'),
+  });
+
   return (
     <Card>
-      <CardContent className="pt-5">
+      <CardContent className="space-y-4 pt-5">
+        {canUpload ? (
+          <div className="flex flex-wrap items-center gap-3">
+            <input
+              ref={fileRef}
+              type="file"
+              accept={ACCEPTED}
+              className="block text-sm text-slate-500 file:mr-3 file:rounded-lg file:border-0 file:bg-brand-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-brand-700 hover:file:bg-brand-100"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) upload.mutate(f);
+              }}
+              disabled={upload.isPending}
+            />
+            {upload.isPending ? (
+              <span className="flex items-center gap-2 text-sm text-slate-500">
+                <Spinner /> Uploading…
+              </span>
+            ) : null}
+            <span className="text-xs text-slate-400">JPG/PNG/WebP/PDF</span>
+          </div>
+        ) : null}
+        {error ? (
+          <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600 ring-1 ring-inset ring-red-100">{error}</p>
+        ) : null}
+
         {docs.isLoading ? (
           <PageLoader />
         ) : !docs.data?.length ? (
-          <p className="py-6 text-center text-sm text-slate-400">
-            No documents. Uploads use presigned URLs to object storage.
-          </p>
+          <p className="py-6 text-center text-sm text-slate-400">No documents yet.</p>
         ) : (
           <ul className="divide-y divide-slate-100">
             {docs.data.map((d) => (

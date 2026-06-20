@@ -21,7 +21,7 @@ pnpm dev
 
 ## 2. Production prerequisites (ArvanCloud)
 - ArvanCloud VM(s) or managed Kubernetes cluster
-- ArvanCloud Object Storage bucket + access keys → set `S3_*` envs (`S3_ENDPOINT` to the ArvanCloud endpoint, `S3_FORCE_PATH_STYLE=true`)
+- ArvanCloud Object Storage bucket + access keys → set `S3_*` envs (`S3_ENDPOINT` to the ArvanCloud endpoint, `S3_FORCE_PATH_STYLE=true`). Configure bucket **CORS** to allow `PUT`/`GET` from the frontend origin so browser presigned uploads/downloads work (dev MinIO allows this out of the box via the `minio-init` service).
 - Managed PostgreSQL or self-hosted Postgres on a VM with encrypted volume
 - DNS A records → Nginx ingress
 - Keycloak realm `coachg` with `coachg-backend` (confidential) + `coachg-frontend` (public) clients
