@@ -400,7 +400,9 @@ model BloodMarker {
   panel          BloodworkPanel  @relation(fields: [panelId], references: [id], onDelete: Cascade)
   panelId        String
   type           BloodMarkerType
-  value          Float
+  // Sensitive PII: stored AES-256-GCM encrypted (app-level field encryption).
+  // The numeric value is encrypted before persistence and decrypted on read.
+  value          String
   unit           String
   referenceLow   Float?
   referenceHigh  Float?

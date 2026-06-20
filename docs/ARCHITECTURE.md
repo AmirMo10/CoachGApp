@@ -133,7 +133,7 @@ All Claude calls go through `services/ai` which: (a) injects only whitelisted co
 - **Rate limiting:** Nginx + Nest `@nestjs/throttler`.
 - **Validation:** `class-validator` DTOs + Zod schemas in `packages/shared`.
 - **Audit logging:** every mutating action → `AuditLog` table (actor, action, entity, before/after hash).
-- **Encryption at rest:** Postgres volume encryption (in place). App-level field encryption for sensitive PII (bloodwork) via `ENCRYPTION_KEY` is planned/reserved, not yet implemented.
+- **Encryption at rest:** Postgres volume encryption + **app-level AES-256-GCM field encryption** for sensitive bloodwork PII (marker values, panel notes) via `ENCRYPTION_KEY`.
 - **Secure uploads:** presigned PUT URLs, content-type allowlist, size caps, server-side virus/type validation, randomized object keys.
 - Follows OWASP Top 10 mitigations (see [Security Engineer agent](../.claude/agents/security-engineer.md)).
 
