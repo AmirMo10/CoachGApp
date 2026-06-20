@@ -55,4 +55,44 @@ export class AnalyticsService {
       count: b.count,
     }));
   }
+
+  /** Platform-wide metrics for admins. */
+  async adminOverview() {
+    const [coaches, clients, programs, users] = await Promise.all([
+      this.prisma.coachProfile.count(),
+      this.prisma.clientProfile.count({ where: { deletedAt: null } }),
+      this.prisma.program.count(),
+      this.prisma.user.count({ where: { isActive: true } }),
+    ]);
+    const allClients = await this.prisma.clientProfile.findMany({
+      where: { deletedAt: null },
+      select: { createdAt: true },
+    });
+    return {
+      totals: { coaches, clients, programs, users },
+      clientsByWeek: this.bucketByWeek(
+        allClients.map((c) => c.createdAt),
+        8,
+      ),
+    };
+  }
+
+  /** List all coaches with client counts (admin). */
+  async listCoaches() {
+    const coaches = await this.prisma.coachProfile.findMany({
+      include: {
+        user: { select: { email: true, firstName: true, lastName: true, isActive: true } },
+        _count: { select: { clients: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    return coaches.map((c) => ({
+      id: c.id,
+      businessName: c.businessName,
+      email: c.user.email,
+      name: `${c.user.firstName ?? ''} ${c.user.lastName ?? ''}`.trim(),
+      isActive: c.user.isActive,
+      clientCount: c._count.clients,
+    }));
+  }
 }

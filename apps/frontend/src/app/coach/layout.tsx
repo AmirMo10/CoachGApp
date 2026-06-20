@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Users, LayoutDashboard, Dumbbell, Settings, LogOut } from 'lucide-react';
-import { useAuth } from '@/lib/auth';
+import { useAuth, homeForRole } from '@/lib/auth';
 import { Logo, Avatar } from '@/components/brand';
 import { PageLoader } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils';
@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 const NAV = [
   { href: '/coach', label: 'Clients', icon: Users },
   { href: '/coach/overview', label: 'Overview', icon: LayoutDashboard },
-  { href: '/coach/library', label: 'Exercise Library', icon: Dumbbell, soon: true },
+  { href: '/coach/library', label: 'Exercise Library', icon: Dumbbell },
   { href: '/coach/settings', label: 'Settings', icon: Settings, soon: true },
 ];
 
@@ -22,10 +22,12 @@ export default function CoachLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!loading && !user) router.replace('/login');
+    if (loading) return;
+    if (!user) router.replace('/login');
+    else if (user.role !== 'COACH') router.replace(homeForRole(user.role));
   }, [loading, user, router]);
 
-  if (loading || !user) {
+  if (loading || !user || user.role !== 'COACH') {
     return (
       <div className="grid min-h-screen place-items-center">
         <PageLoader />

@@ -13,6 +13,13 @@ interface AuthState {
 
 const AuthContext = createContext<AuthState | undefined>(undefined);
 
+/** Landing route per role. */
+export function homeForRole(role: AuthUser['role']): string {
+  if (role === 'ADMIN') return '/admin';
+  if (role === 'CLIENT') return '/client';
+  return '/coach';
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
@@ -33,7 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const res = await Api.login(email, password);
     window.localStorage.setItem(TOKEN_KEY, res.accessToken);
     setUser(res.user);
-    router.push('/coach');
+    router.push(homeForRole(res.user.role));
   };
 
   const logout = () => {

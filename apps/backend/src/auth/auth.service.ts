@@ -42,9 +42,19 @@ export class AuthService {
   }
 
   async me(userId: string) {
-    return this.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, email: true, role: true, firstName: true, lastName: true },
+      include: { coachProfile: true, clientProfile: true },
     });
+    if (!user) return null;
+    return {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      coachProfileId: user.coachProfile?.id,
+      clientProfileId: user.clientProfile?.id,
+    };
   }
 }
