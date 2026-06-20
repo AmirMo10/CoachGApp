@@ -5,9 +5,9 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { JwtService } from '@nestjs/jwt';
 import { Role } from '@coachg/types';
 import { PUBLIC_KEY, ROLES_KEY } from './roles.decorator';
+import { TokenVerifierService } from './token-verifier.service';
 
 /**
  * Combined authentication + RBAC guard.
@@ -23,7 +23,7 @@ import { PUBLIC_KEY, ROLES_KEY } from './roles.decorator';
 export class RolesGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
-    private readonly jwt: JwtService,
+    private readonly verifier: TokenVerifierService,
   ) {}
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
@@ -37,13 +37,8 @@ export class RolesGuard implements CanActivate {
     const token = this.extractToken(req);
     if (!token) throw new UnauthorizedException('Missing bearer token');
 
-    try {
-      req.user = await this.jwt.verifyAsync(token, {
-        secret: process.env.JWT_SECRET ?? 'dev-only-change-me',
-      });
-    } catch {
-      throw new UnauthorizedException('Invalid token');
-    }
+    // TokenVerifier handles both the local dev JWT and Keycloak OIDC (JWKS).
+    req.user = await this.verifier.verify(token);
 
     const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
       ctx.getHandler(),
