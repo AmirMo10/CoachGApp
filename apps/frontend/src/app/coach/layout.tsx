@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 
 const NAV = [
   { href: '/coach', label: 'Clients', icon: Users },
-  { href: '/coach/overview', label: 'Overview', icon: LayoutDashboard, soon: true },
+  { href: '/coach/overview', label: 'Overview', icon: LayoutDashboard },
   { href: '/coach/library', label: 'Exercise Library', icon: Dumbbell, soon: true },
   { href: '/coach/settings', label: 'Settings', icon: Settings, soon: true },
 ];

@@ -167,6 +167,18 @@ export const Api = {
     }),
   me: () => api<AuthUser>('/auth/me'),
 
+  overview: () =>
+    api<{
+      totals: {
+        clients: number;
+        programs: number;
+        nutritionPlans: number;
+        recoveryPlans: number;
+        assessments: number;
+      };
+      clientsByWeek: { label: string; count: number }[];
+    }>('/coach/overview'),
+
   clients: () => api<ClientSummary[]>('/clients'),
   createClient: (data: { firstName: string; lastName: string; email?: string }) =>
     api<ClientSummary>('/clients', { method: 'POST', body: JSON.stringify(data) }),

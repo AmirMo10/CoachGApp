@@ -21,6 +21,7 @@ import { BloodworkModule } from './bloodwork/bloodwork.module';
 import { ProgressModule } from './progress/progress.module';
 import { ReportsModule } from './reports/reports.module';
 import { EngagementModule } from './engagement/engagement.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 import { HealthModule } from './health/health.module';
 
 @Module({
@@ -54,6 +55,7 @@ import { HealthModule } from './health/health.module';
     ProgressModule,
     ReportsModule,
     EngagementModule,
+    AnalyticsModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
