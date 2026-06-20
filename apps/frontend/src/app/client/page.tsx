@@ -15,8 +15,10 @@ import { LineChart } from '@/components/ui/line-chart';
 import { Spinner } from '@/components/ui/spinner';
 import { Tabs } from '@/components/ui/tabs';
 import { MessagesPanel, BloodworkPanel } from '@/components/panels';
+import { useT } from '@/lib/i18n';
 
 export default function ClientDashboard() {
+  const { t } = useT();
   const { user } = useAuth();
   const id = user?.clientProfileId ?? '';
   const qc = useQueryClient();
@@ -44,28 +46,28 @@ export default function ClientDashboard() {
   return (
     <div className="space-y-8">
       <div>
-        <p className="text-sm font-medium text-brand-600">Welcome back</p>
-        <h1 className="mt-1 text-3xl font-bold tracking-tight text-ink">Your plan</h1>
-        <p className="mt-1 text-slate-500">Your training, nutrition, recovery, and progress in one place.</p>
+        <p className="text-sm font-medium text-brand-600">{t('client.welcome')}</p>
+        <h1 className="mt-1 text-3xl font-bold tracking-tight text-ink">{t('client.yourPlan')}</h1>
+        <p className="mt-1 text-slate-500">{t('client.subtitle')}</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Stat
-          label="Program"
+          label={t('client.program')}
           value={latestProgram ? `${latestProgram.durationWeeks}wk` : '—'}
           sub={latestProgram?.periodization}
           icon={<Dumbbell />}
           tone="brand"
         />
         <Stat
-          label="Daily calories"
+          label={t('client.dailyCalories')}
           value={latestNutrition ? `${latestNutrition.goalCalories}` : '—'}
           sub={latestNutrition?.strategy}
           icon={<Salad />}
           tone="sky"
         />
         <Stat
-          label="Recovery"
+          label={t('client.recovery')}
           value={latestRecovery ? `${latestRecovery.recoveryScore}/100` : '—'}
           sub={latestRecovery?.deloadRecommended ? 'Deload advised' : 'On track'}
           icon={<HeartPulse />}
@@ -76,7 +78,7 @@ export default function ClientDashboard() {
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Training program</CardTitle>
+            <CardTitle>{t('client.trainingProgram')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             {!programs.data?.length ? (
@@ -118,7 +120,7 @@ export default function ClientDashboard() {
               </Button>
             </form>
           }>
-            <CardTitle>Progress</CardTitle>
+            <CardTitle>{t('client.progress')}</CardTitle>
             <CardDescription>Your bodyweight trend.</CardDescription>
           </CardHeader>
           <CardContent>
@@ -134,8 +136,8 @@ export default function ClientDashboard() {
 
       <Tabs
         items={[
-          { key: 'messages', label: 'Messages', content: <MessagesPanel clientId={id} role="CLIENT" /> },
-          { key: 'bloodwork', label: 'Bloodwork', content: <BloodworkPanel clientId={id} canAdd={false} /> },
+          { key: 'messages', label: t('tabs.messages'), content: <MessagesPanel clientId={id} role="CLIENT" /> },
+          { key: 'bloodwork', label: t('tabs.bloodwork'), content: <BloodworkPanel clientId={id} canAdd={false} /> },
         ]}
       />
     </div>

@@ -16,7 +16,7 @@ export function Logo({
         G
       </span>
       {showText ? (
-        <span className={cn('text-lg font-bold tracking-tight', light ? 'text-white' : 'text-ink')}>
+        <span className={cn('text-lg font-bold tracking-tight', light ? 'text-white' : 'text-ink dark:text-slate-100')}>
           Coach<span className="text-brand-500">G</span>
         </span>
       ) : null}

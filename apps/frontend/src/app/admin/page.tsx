@@ -8,33 +8,35 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { LineChart } from '@/components/ui/line-chart';
 import { PageLoader } from '@/components/ui/spinner';
+import { useT } from '@/lib/i18n';
 
 export default function AdminDashboard() {
+  const { t } = useT();
   const analytics = useQuery({ queryKey: ['adminAnalytics'], queryFn: Api.adminAnalytics });
   const coaches = useQuery({ queryKey: ['adminCoaches'], queryFn: Api.adminCoaches });
 
   if (analytics.isLoading) return <PageLoader />;
   if (analytics.error || !analytics.data) return <p className="text-red-600">Failed to load analytics.</p>;
-  const t = analytics.data.totals;
+  const totals = analytics.data.totals;
 
   return (
     <div className="space-y-8">
       <div>
-        <p className="text-sm font-medium text-brand-600">Platform</p>
-        <h1 className="mt-1 text-3xl font-bold tracking-tight text-ink">Admin overview</h1>
-        <p className="mt-1 text-slate-500">System-wide metrics and coach management.</p>
+        <p className="text-sm font-medium text-brand-600">{t('admin.platform')}</p>
+        <h1 className="mt-1 text-3xl font-bold tracking-tight text-ink">{t('admin.title')}</h1>
+        <p className="mt-1 text-slate-500">{t('admin.subtitle')}</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat label="Coaches" value={t.coaches} icon={<UserCog />} tone="brand" />
-        <Stat label="Clients" value={t.clients} icon={<Users />} tone="sky" />
-        <Stat label="Programs" value={t.programs} icon={<Dumbbell />} tone="amber" />
-        <Stat label="Active users" value={t.users} icon={<Activity />} tone="slate" />
+        <Stat label={t('admin.coaches')} value={totals.coaches} icon={<UserCog />} tone="brand" />
+        <Stat label={t('admin.clients')} value={totals.clients} icon={<Users />} tone="sky" />
+        <Stat label={t('admin.programs')} value={totals.programs} icon={<Dumbbell />} tone="amber" />
+        <Stat label={t('admin.activeUsers')} value={totals.users} icon={<Activity />} tone="slate" />
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Client growth</CardTitle>
+          <CardTitle>{t('overview.clientGrowth')}</CardTitle>
           <CardDescription>New clients across the platform (last 8 weeks).</CardDescription>
         </CardHeader>
         <CardContent>
@@ -44,7 +46,7 @@ export default function AdminDashboard() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Coaches</CardTitle>
+          <CardTitle>{t('admin.coaches')}</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           {coaches.isLoading ? (

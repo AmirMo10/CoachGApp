@@ -3,8 +3,10 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth, homeForRole } from '@/lib/auth';
+import { useT } from '@/lib/i18n';
 import { Logo, Avatar } from '@/components/brand';
 import { Button } from '@/components/ui/button';
+import { ThemeToggle, LanguageToggle } from '@/components/toggles';
 import { PageLoader } from '@/components/ui/spinner';
 import type { AuthUser } from '@/lib/api';
 
@@ -23,6 +25,7 @@ export function PortalShell({
   children: React.ReactNode;
 }) {
   const { user, loading, logout } = useAuth();
+  const { t } = useT();
   const router = useRouter();
 
   useEffect(() => {
@@ -41,18 +44,20 @@ export function PortalShell({
 
   return (
     <div className="min-h-screen bg-[var(--background)]">
-      <header className="flex items-center justify-between border-b border-slate-200/70 bg-white px-6 py-3.5">
+      <header className="flex items-center justify-between border-b border-slate-200/70 bg-white px-6 py-3.5 dark:border-slate-800 dark:bg-slate-950">
         <div className="flex items-center gap-3">
           <Logo />
           <span className="hidden text-sm font-medium text-slate-400 sm:inline">· {title}</span>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="hidden items-center gap-2 sm:flex">
+        <div className="flex items-center gap-2">
+          <div className="mr-1 hidden items-center gap-2 sm:flex">
             <Avatar name={user.email} className="size-8 text-xs" />
             <span className="text-sm text-slate-500">{user.email}</span>
           </div>
+          <LanguageToggle />
+          <ThemeToggle />
           <Button variant="outline" size="sm" onClick={logout}>
-            Sign out
+            {t('common.signOut')}
           </Button>
         </div>
       </header>

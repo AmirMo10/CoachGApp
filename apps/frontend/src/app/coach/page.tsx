@@ -11,8 +11,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Stat } from '@/components/ui/stat';
 import { Avatar } from '@/components/brand';
 import { PageLoader } from '@/components/ui/spinner';
+import { useT } from '@/lib/i18n';
 
 export default function CoachDashboard() {
+  const { t } = useT();
   const qc = useQueryClient();
   const { data: clients, isLoading, error } = useQuery({ queryKey: ['clients'], queryFn: Api.clients });
 
@@ -37,19 +39,19 @@ export default function CoachDashboard() {
     <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-sm font-medium text-brand-600">Coach workspace</p>
-          <h1 className="mt-1 text-3xl font-bold tracking-tight text-ink">Clients</h1>
-          <p className="mt-1 text-slate-500">Manage athletes and generate their plans.</p>
+          <p className="text-sm font-medium text-brand-600">{t('dash.workspace')}</p>
+          <h1 className="mt-1 text-3xl font-bold tracking-tight text-ink">{t('dash.clients')}</h1>
+          <p className="mt-1 text-slate-500">{t('dash.clientsSubtitle')}</p>
         </div>
         <Button onClick={() => setOpen((v) => !v)}>
-          <UserPlus className="size-4" /> Add client
+          <UserPlus className="size-4" /> {t('dash.addClient')}
         </Button>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <Stat label="Total clients" value={total} icon={<Users />} tone="brand" />
-        <Stat label="Added this week" value={recent} icon={<Plus />} tone="sky" />
-        <Stat label="Active programs" value={total} sub="generated plans" icon={<Activity />} tone="amber" />
+        <Stat label={t('dash.totalClients')} value={total} icon={<Users />} tone="brand" />
+        <Stat label={t('dash.addedThisWeek')} value={recent} icon={<Plus />} tone="sky" />
+        <Stat label={t('dash.activePrograms')} value={total} icon={<Activity />} tone="amber" />
       </div>
 
       {open ? (
