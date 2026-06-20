@@ -8,6 +8,8 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { RolesGuard } from './auth/roles.guard';
 import { AuditInterceptor } from './audit/audit.interceptor';
+import { MetricsModule } from './metrics/metrics.module';
+import { MetricsInterceptor } from './metrics/metrics.interceptor';
 import { StorageModule } from './storage/storage.module';
 import { QueueModule } from './queue/queue.module';
 import { ClientsModule } from './clients/clients.module';
@@ -41,6 +43,7 @@ import { HealthModule } from './health/health.module';
     ]),
     PrismaModule,
     AuthModule,
+    MetricsModule,
     StorageModule,
     QueueModule,
     HealthModule,
@@ -60,6 +63,7 @@ import { HealthModule } from './health/health.module';
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
+    { provide: APP_INTERCEPTOR, useClass: MetricsInterceptor },
     { provide: APP_INTERCEPTOR, useClass: AuditInterceptor },
   ],
 })

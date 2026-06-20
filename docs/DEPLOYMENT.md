@@ -53,15 +53,25 @@ kubectl apply -f infrastructure/kubernetes/ingress.yaml
 Nginx + Let's Encrypt via `certbot` (compose) or cert-manager (K8s). See `infrastructure/nginx/`.
 
 ## 6. Observability
-- **Prometheus** scrapes `/metrics` from backend.
-- **Grafana** dashboards for API latency, queue depth, generation throughput.
-- **Loki** aggregates structured logs (pino → Loki).
-Deploy via `infrastructure/kubernetes/monitoring/` (Phase 7).
+- **Prometheus** scrapes `GET /api/v1/metrics` (Node defaults + the
+  `http_request_duration_seconds` histogram). Config: `infrastructure/monitoring/prometheus.yml`.
+- **Grafana** for dashboards (API latency, queue depth, throughput).
+- **Loki + Promtail** aggregate container logs (pino → stdout → Promtail → Loki).
+- Local/staging: `docker compose -f infrastructure/docker/docker-compose.monitoring.yml up -d`
+  (Grafana on `:3001`, Prometheus on `:9090`, Loki on `:3100`).
+- Production: `kubectl apply -f infrastructure/kubernetes/monitoring.yaml`.
 
 ## 7. Backups
-- `pg_dump` cron → gzip → upload to ArvanCloud Object Storage (`backups/` prefix), 30-day retention.
-- Object storage versioning enabled for client documents/reports.
-- Restore runbook: pull dump → `pg_restore` into a fresh DB → point app via `DATABASE_URL`.
+- Scheduled `pg_dump` → gzip → ArvanCloud Object Storage (`backups/` prefix),
+  30-day retention: `infrastructure/scripts/backup.sh` (run via cron `0 2 * * *`).
+- Restore: `infrastructure/scripts/restore.sh <backup-file.sql.gz>` (downloads,
+  confirms, pipes into `psql`).
+- Enable object-storage versioning for client documents/reports.
+
+## 9. Load testing
+- `k6 run -e BASE=https://coachg.example.com infrastructure/loadtest/k6-smoke.js`
+- Ramps to 200 VUs over the hot read paths with SLO thresholds
+  (error rate <1%, p95 < 400ms). Scale stages toward Phase-1 targets as needed.
 
 ## 8. Scaling checklist (Phase 2 targets: 1k coaches / 50k clients)
 - [ ] PgBouncer connection pooling
