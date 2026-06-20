@@ -15,7 +15,7 @@ export function Tabs({ items, initial }: { items: TabItem[]; initial?: string })
 
   return (
     <div>
-      <div className="flex flex-wrap gap-1 rounded-xl border border-slate-200/70 bg-white p-1 shadow-soft">
+      <div className="flex flex-wrap gap-1 rounded-xl border border-slate-200/70 bg-white p-1 shadow-soft dark:border-slate-800 dark:bg-slate-900">
         {items.map((i) => (
           <button
             key={i.key}
@@ -24,7 +24,7 @@ export function Tabs({ items, initial }: { items: TabItem[]; initial?: string })
               'rounded-lg px-3.5 py-1.5 text-sm font-medium transition-colors',
               active === i.key
                 ? 'bg-brand-gradient text-white shadow-soft'
-                : 'text-slate-600 hover:bg-slate-100',
+                : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800',
             )}
           >
             {i.label}

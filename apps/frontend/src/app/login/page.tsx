@@ -4,13 +4,16 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Dumbbell, Salad, HeartPulse } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
+import { useT } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Input, Field } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { Logo } from '@/components/brand';
+import { ThemeToggle, LanguageToggle } from '@/components/toggles';
 
 export default function LoginPage() {
   const { login } = useAuth();
+  const { t } = useT();
   const [email, setEmail] = useState('coach@coachg.dev');
   const [password, setPassword] = useState('password123');
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +43,7 @@ export default function LoginPage() {
         </div>
         <div className="relative">
           <h2 className="max-w-md text-3xl font-bold leading-tight tracking-tight">
-            Generate a complete coaching program in seconds.
+            {t('login.panelTitle')}
           </h2>
           <div className="mt-8 space-y-3">
             {[
@@ -61,19 +64,23 @@ export default function LoginPage() {
       </div>
 
       {/* Form panel */}
-      <div className="flex items-center justify-center bg-[var(--background)] px-6 py-12">
+      <div className="relative flex items-center justify-center bg-[var(--background)] px-6 py-12">
+        <div className="absolute right-4 top-4 flex items-center gap-2">
+          <LanguageToggle />
+          <ThemeToggle />
+        </div>
         <div className="w-full max-w-sm animate-fade-up">
           <div className="lg:hidden">
             <Logo />
           </div>
-          <h1 className="mt-8 text-2xl font-bold tracking-tight text-ink">Welcome back</h1>
-          <p className="mt-1 text-sm text-slate-500">Sign in to your coach workspace.</p>
+          <h1 className="mt-8 text-2xl font-bold tracking-tight text-ink">{t('login.welcome')}</h1>
+          <p className="mt-1 text-sm text-slate-500">{t('login.subtitle')}</p>
 
           <form onSubmit={onSubmit} className="mt-8 space-y-4">
-            <Field label="Email">
+            <Field label={t('login.email')}>
               <Input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required />
             </Field>
-            <Field label="Password">
+            <Field label={t('login.password')}>
               <Input
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -82,20 +89,20 @@ export default function LoginPage() {
               />
             </Field>
             {error ? (
-              <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600 ring-1 ring-inset ring-red-100">
+              <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600 ring-1 ring-inset ring-red-100 dark:bg-red-500/15 dark:ring-red-500/30">
                 {error}
               </p>
             ) : null}
             <Button type="submit" className="w-full" size="lg" disabled={loading}>
-              {loading ? <Spinner /> : <>Sign in <ArrowRight className="size-4" /></>}
+              {loading ? <Spinner /> : <>{t('login.signIn')} <ArrowRight className="size-4" /></>}
             </Button>
           </form>
 
-          <div className="mt-6 rounded-xl border border-dashed border-slate-300 bg-white/60 px-4 py-3 text-xs text-slate-500">
-            <span className="font-medium text-slate-700">Demo:</span> coach@coachg.dev / password123
+          <div className="mt-6 rounded-xl border border-dashed border-slate-300 bg-white/60 px-4 py-3 text-xs text-slate-500 dark:border-slate-700 dark:bg-slate-900/60">
+            <span className="font-medium text-slate-700">{t('login.demo')}:</span> coach@coachg.dev / password123
           </div>
           <Link href="/" className="mt-6 inline-block text-sm text-slate-500 hover:text-brand-600">
-            ← Back to home
+            ← {t('login.backHome')}
           </Link>
         </div>
       </div>

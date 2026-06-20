@@ -8,8 +8,9 @@
     --foreground: #0b1220;
   }
 
-  * {
-    border-color: theme('colors.slate.200');
+  .dark {
+    --background: #020617; /* slate-950 */
+    --foreground: #e2e8f0; /* slate-200 */
   }
 
   body {
@@ -36,6 +37,38 @@
   .dot-grid {
     background-image: radial-gradient(theme('colors.slate.300') 1px, transparent 1px);
     background-size: 22px 22px;
+  }
+  .dark .dot-grid {
+    background-image: radial-gradient(theme('colors.slate.700') 1px, transparent 1px);
+  }
+}
+
+/* Dark-mode overrides for repeated light utilities that have no dark: counterpart
+   on their elements (color/border/subtle-surface only — safe, no cascade fight). */
+@layer utilities {
+  .dark .text-ink {
+    color: #f1f5f9;
+  }
+  .dark .text-slate-700 {
+    color: #cbd5e1;
+  }
+  .dark .text-slate-600 {
+    color: #94a3b8;
+  }
+  .dark .border-slate-100 {
+    border-color: #1e293b;
+  }
+  .dark .border-slate-200\/70 {
+    border-color: #1e293b;
+  }
+  .dark .bg-slate-50 {
+    background-color: #0b1220;
+  }
+  .dark .bg-slate-50\/60 {
+    background-color: rgba(15, 23, 42, 0.6);
+  }
+  .dark .bg-slate-50\/50 {
+    background-color: rgba(15, 23, 42, 0.5);
   }
 }
 

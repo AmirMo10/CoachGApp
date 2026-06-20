@@ -8,10 +8,12 @@ import { Button } from '@/components/ui/button';
 import { Input, Field } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { PageLoader, Spinner } from '@/components/ui/spinner';
+import { useT } from '@/lib/i18n';
 
 const toList = (s: string) => s.split(',').map((x) => x.trim()).filter(Boolean);
 
 export default function SettingsPage() {
+  const { t } = useT();
   const qc = useQueryClient();
   const profile = useQuery({ queryKey: ['coachProfile'], queryFn: Api.coachProfile });
 
@@ -63,9 +65,9 @@ export default function SettingsPage() {
   return (
     <div className="max-w-2xl space-y-6">
       <div>
-        <p className="text-sm font-medium text-brand-600">Coach workspace</p>
-        <h1 className="mt-1 text-3xl font-bold tracking-tight text-ink">Settings</h1>
-        <p className="mt-1 text-slate-500">Your business profile and report branding.</p>
+        <p className="text-sm font-medium text-brand-600">{t('dash.workspace')}</p>
+        <h1 className="mt-1 text-3xl font-bold tracking-tight text-ink">{t('settings.title')}</h1>
+        <p className="mt-1 text-slate-500">{t('settings.subtitle')}</p>
       </div>
 
       <Card>

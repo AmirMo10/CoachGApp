@@ -8,6 +8,7 @@ import { Input, Select, Field } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { PageLoader } from '@/components/ui/spinner';
+import { useT } from '@/lib/i18n';
 
 const PATTERNS = ['', 'SQUAT', 'HINGE', 'LUNGE', 'HORIZONTAL_PUSH', 'VERTICAL_PUSH', 'HORIZONTAL_PULL', 'VERTICAL_PULL', 'CARRY', 'ROTATION', 'GAIT', 'PLYOMETRIC', 'CONDITIONING'];
 const DIFFICULTY = ['', 'BEGINNER', 'INTERMEDIATE', 'ADVANCED'];
@@ -15,6 +16,7 @@ const DIFFICULTY = ['', 'BEGINNER', 'INTERMEDIATE', 'ADVANCED'];
 const diffTone = (d: string) => (d === 'ADVANCED' ? 'warn' : d === 'INTERMEDIATE' ? 'info' : 'success');
 
 export default function LibraryPage() {
+  const { t } = useT();
   const [pattern, setPattern] = useState('');
   const [difficulty, setDifficulty] = useState('');
   const [equipment, setEquipment] = useState('');
@@ -33,11 +35,9 @@ export default function LibraryPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-sm font-medium text-brand-600">Coach workspace</p>
-        <h1 className="mt-1 text-3xl font-bold tracking-tight text-ink">Exercise Library</h1>
-        <p className="mt-1 text-slate-500">
-          The deterministic exercise catalog the program engine selects from. AI never invents exercises.
-        </p>
+        <p className="text-sm font-medium text-brand-600">{t('dash.workspace')}</p>
+        <h1 className="mt-1 text-3xl font-bold tracking-tight text-ink">{t('library.title')}</h1>
+        <p className="mt-1 text-slate-500">{t('library.subtitle')}</p>
       </div>
 
       <Card>
@@ -77,7 +77,7 @@ export default function LibraryPage() {
           <p className="text-sm text-slate-500">{filtered.length} exercises</p>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.slice(0, 120).map((ex) => (
-              <div key={ex.id} className="rounded-2xl border border-slate-200/70 bg-white p-4 shadow-card">
+              <div key={ex.id} className="rounded-2xl border border-slate-200/70 bg-white p-4 shadow-card dark:border-slate-800 dark:bg-slate-900">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <span className="grid size-8 place-items-center rounded-lg bg-brand-50 text-brand-600">
