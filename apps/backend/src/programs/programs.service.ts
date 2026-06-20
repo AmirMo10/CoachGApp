@@ -143,7 +143,27 @@ export class ProgramsService {
   async get(programId: string) {
     const program = await this.prisma.program.findUnique({
       where: { id: programId },
-      include: { weeks: { include: { days: { include: { exercises: true } } } } },
+      include: {
+        weeks: {
+          orderBy: { weekIndex: 'asc' },
+          include: {
+            days: {
+              orderBy: { dayIndex: 'asc' },
+              include: {
+                // Include the exercise so the UI can render names/cues, not raw ids.
+                exercises: {
+                  orderBy: { order: 'asc' },
+                  include: {
+                    exercise: {
+                      select: { name: true, primaryMuscles: true, movementPattern: true },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     });
     if (!program) throw new NotFoundException('Program not found');
     return program;

@@ -15,11 +15,13 @@ import {
 } from 'lucide-react';
 import { Api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
-import { Field, Select } from '@/components/ui/input';
+import { Field, Input, Select } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar } from '@/components/brand';
 import { PageLoader, Spinner } from '@/components/ui/spinner';
+import { LineChart } from '@/components/ui/line-chart';
+import { LineChart as LineIcon } from 'lucide-react';
 
 export default function ClientDetailPage({ params }: { params: { id: string } }) {
   const { id } = params;
@@ -31,8 +33,11 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
   const programs = useQuery({ queryKey: ['programs', id], queryFn: () => Api.programs(id) });
   const nutrition = useQuery({ queryKey: ['nutrition', id], queryFn: () => Api.nutrition(id) });
   const recovery = useQuery({ queryKey: ['recovery', id], queryFn: () => Api.recovery(id) });
+  const progress = useQuery({ queryKey: ['progress', id], queryFn: () => Api.progress(id) });
 
   const [goalId, setGoalId] = useState('');
+  const [weight, setWeight] = useState('');
+  const [bodyFat, setBodyFat] = useState('');
   const [periodization, setPeriodization] = useState('UNDULATING');
   const [durationWeeks, setDurationWeeks] = useState(8);
   const [daysPerWeek, setDaysPerWeek] = useState(4);
@@ -58,6 +63,19 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
     onError: onErr,
   });
   const genReport = useMutation({ mutationFn: () => Api.generateReport(id) });
+  const logProgress = useMutation({
+    mutationFn: () =>
+      Api.addProgress(id, {
+        weightKg: weight ? Number(weight) : undefined,
+        bodyFatPct: bodyFat ? Number(bodyFat) : undefined,
+      }),
+    onSuccess: () => {
+      setWeight('');
+      setBodyFat('');
+      qc.invalidateQueries({ queryKey: ['progress', id] });
+    },
+    onError: onErr,
+  });
 
   if (client.isLoading) return <PageLoader />;
   if (client.error || !client.data) return <p className="text-red-600">Client not found.</p>;
@@ -220,15 +238,19 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
       <div className="grid gap-5 lg:grid-cols-3">
         <PlanCard icon={<Dumbbell className="size-[18px]" />} title="Programs" tone="brand" empty={!programs.data?.length}>
           {programs.data?.map((p) => (
-            <div key={p.id} className="rounded-xl border border-slate-100 bg-slate-50/60 p-3">
+            <Link
+              key={p.id}
+              href={`/coach/clients/${id}/programs/${p.id}`}
+              className="block rounded-xl border border-slate-100 bg-slate-50/60 p-3 transition-colors hover:border-brand-200 hover:bg-brand-50/50"
+            >
               <div className="flex items-center justify-between">
                 <span className="font-medium text-ink">{p.periodization}</span>
                 <Badge tone={p.status === 'ACTIVE' ? 'success' : 'default'}>{p.status}</Badge>
               </div>
               <p className="mt-1 text-sm text-slate-500">
-                {p.durationWeeks} weeks · {p.daysPerWeek} days/week
+                {p.durationWeeks} weeks · {p.daysPerWeek} days/week · view →
               </p>
-            </div>
+            </Link>
           ))}
         </PlanCard>
 
@@ -265,6 +287,63 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
           ))}
         </PlanCard>
       </div>
+
+      {/* Progress tracking */}
+      <Card>
+        <CardHeader
+          action={
+            <form
+              className="flex items-end gap-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (weight || bodyFat) logProgress.mutate();
+              }}
+            >
+              <div className="w-24">
+                <Field label="Weight kg">
+                  <Input
+                    type="number"
+                    step="0.1"
+                    value={weight}
+                    onChange={(e) => setWeight(e.target.value)}
+                    placeholder="84"
+                  />
+                </Field>
+              </div>
+              <div className="w-20">
+                <Field label="Body %">
+                  <Input
+                    type="number"
+                    step="0.1"
+                    value={bodyFat}
+                    onChange={(e) => setBodyFat(e.target.value)}
+                    placeholder="16"
+                  />
+                </Field>
+              </div>
+              <Button type="submit" size="sm" disabled={(!weight && !bodyFat) || logProgress.isPending}>
+                {logProgress.isPending ? <Spinner /> : 'Log'}
+              </Button>
+            </form>
+          }
+        >
+          <CardTitle className="flex items-center gap-2">
+            <span className="grid size-7 place-items-center rounded-lg bg-brand-50 text-brand-600">
+              <LineIcon className="size-[18px]" />
+            </span>
+            Progress
+          </CardTitle>
+          <CardDescription>Bodyweight trend over logged entries.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <LineChart
+            unit="kg"
+            data={(progress.data ?? [])
+              .filter((p) => p.weightKg != null)
+              .map((p) => ({ label: p.entryDate.slice(5, 10), value: p.weightKg as number }))}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -8,7 +8,7 @@ A phased plan from foundation to production. Each phase ends with a deployable, 
 | 2 | Backend/Frontend foundation, Auth, DB | ✅ Complete (Keycloak OIDC pending) |
 | 3 | Client mgmt, Assessment, Exercise library | 🟡 Core complete (docs/messaging + ETL pending) |
 | 4 | Program / Nutrition / Recovery engines | ✅ Complete |
-| 5 | PDF reports, dashboards, progress tracking | 🟡 Backend complete (frontend dashboards pending) |
+| 5 | PDF reports, dashboards, progress tracking | 🟡 Reports + program viewer + progress charts done (overview dashboard pending) |
 | 6 | AI personalization (Claude) | 🟡 Explanation layer complete (report copy/messaging pending) |
 | 7 | Monitoring, deployment, production infra | 🟡 Scaffolded (metrics/deploy/backups pending) |
 
@@ -59,8 +59,9 @@ Test coverage: **30 passing tests** across the deterministic engines. CI runs ty
 - [x] React PDF report templates (`services/report-engine`)
 - [x] Async report generation via BullMQ → S3-compatible object storage
 - [x] S3-compatible storage service (presigned upload/download, ArvanCloud)
-- [ ] **Frontend dashboards + progress charts**
-- [ ] **Program week-by-week viewer** (expandable training days)
+- [x] Progress charts (SVG bodyweight trend) + inline quick-log on client page
+- [x] Program week-by-week viewer (expandable days, load%, conditioning, rationale)
+- [ ] Coach overview dashboard with aggregate charts
 
 ## Phase 6 — AI personalization 🟡
 - [x] Claude integration (`services/ai`) with bypassable, deterministic fallback

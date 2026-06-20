@@ -117,8 +117,45 @@ export interface RecoveryPlan {
 export interface ProgressEntry {
   id: string;
   entryDate: string;
-  weightKg?: number;
-  bodyFatPct?: number;
+  weightKg?: number | null;
+  bodyFatPct?: number | null;
+  waistCm?: number | null;
+}
+
+export interface ProgramExerciseFull {
+  id: string;
+  order: number;
+  sets: number;
+  reps: string;
+  loadPctOf1RM?: number | null;
+  rpe?: number | null;
+  tempo?: string | null;
+  restSeconds: number;
+  progressionRule?: string | null;
+  exercise: { name: string; primaryMuscles: string[]; movementPattern: string };
+}
+
+export interface ProgramDayFull {
+  id: string;
+  dayIndex: number;
+  focus: string;
+  payload?: { warmup?: string[]; conditioning?: string[] | null } | null;
+  exercises: ProgramExerciseFull[];
+}
+
+export interface ProgramWeekFull {
+  id: string;
+  weekIndex: number;
+  phase: string;
+  volumeMultiplier: number;
+  intensityMultiplier: number;
+  isDeload: boolean;
+  days: ProgramDayFull[];
+}
+
+export interface ProgramFull extends ProgramSummary {
+  aiRationale?: string | null;
+  weeks: ProgramWeekFull[];
 }
 
 // ── Endpoint helpers ──
@@ -146,6 +183,7 @@ export const Api = {
     api<Goal>(`/clients/${clientId}/goals`, { method: 'POST', body: JSON.stringify(body) }),
 
   programs: (clientId: string) => api<ProgramSummary[]>(`/clients/${clientId}/programs`),
+  program: (programId: string) => api<ProgramFull>(`/programs/${programId}`),
   generateProgram: (
     clientId: string,
     body: { goalId: string; periodization: string; durationWeeks: number; daysPerWeek: number },
@@ -167,6 +205,10 @@ export const Api = {
     api<RecoveryPlan>(`/clients/${clientId}/recovery/generate`, { method: 'POST' }),
 
   progress: (clientId: string) => api<ProgressEntry[]>(`/clients/${clientId}/progress`),
+  addProgress: (
+    clientId: string,
+    body: { entryDate?: string; weightKg?: number; bodyFatPct?: number; waistCm?: number },
+  ) => api<ProgressEntry>(`/clients/${clientId}/progress`, { method: 'POST', body: JSON.stringify(body) }),
 
   generateReport: (clientId: string) =>
     api<{ reportId: string; status: string }>(`/clients/${clientId}/reports/generate`, {
