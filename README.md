@@ -80,7 +80,7 @@ pnpm dev
 ```
 
 - Backend: http://localhost:4000 (Swagger at `/api/docs`)
-- Frontend: http://localhost:3000
+- Frontend: http://localhost:5000
 
 ---
 

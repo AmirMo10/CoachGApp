@@ -26,4 +26,4 @@ spec:
             backend:
               service:
                 name: frontend
-                port: { number: 3000 }
+                port: { number: 5000 }

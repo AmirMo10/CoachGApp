@@ -15,8 +15,9 @@ RUN pnpm --filter @coachg/frontend build
 
 FROM base AS runtime
 ENV NODE_ENV=production
+ENV PORT=5000
 COPY --from=build /app/apps/frontend/.next/standalone ./
 COPY --from=build /app/apps/frontend/.next/static ./apps/frontend/.next/static
 COPY --from=build /app/apps/frontend/public ./apps/frontend/public
-EXPOSE 3000
+EXPOSE 5000
 CMD ["node", "apps/frontend/server.js"]

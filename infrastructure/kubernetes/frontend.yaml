@@ -14,7 +14,9 @@ spec:
       containers:
         - name: frontend
           image: registry.arvancloud.ir/coachg/frontend:latest
-          ports: [{ containerPort: 3000 }]
+          ports: [{ containerPort: 5000 }]
+          env:
+            - { name: PORT, value: '5000' } # Next standalone server reads PORT
           envFrom:
             - configMapRef: { name: coachg-config }
           resources:
@@ -28,4 +30,4 @@ metadata:
   namespace: coachg
 spec:
   selector: { app: frontend }
-  ports: [{ port: 3000, targetPort: 3000 }]
+  ports: [{ port: 5000, targetPort: 5000 }]

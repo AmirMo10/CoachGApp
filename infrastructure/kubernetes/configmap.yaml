@@ -6,7 +6,7 @@ metadata:
 data:
   NODE_ENV: 'production'
   BACKEND_PORT: '4000'
-  FRONTEND_PORT: '3000'
+  FRONTEND_PORT: '5000'
   AUTH_PROVIDER: 'keycloak'
   S3_REGION: 'ir-thr-at1'
   S3_FORCE_PATH_STYLE: 'true'
