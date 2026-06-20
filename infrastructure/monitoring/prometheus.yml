@@ -1,0 +1,14 @@
+# Prometheus scrape config for Coach"G".
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: coachg-backend
+    metrics_path: /api/v1/metrics
+    static_configs:
+      - targets: ['backend:4000']
+
+  - job_name: prometheus
+    static_configs:
+      - targets: ['localhost:9090']

@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main, 'claude/**']
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Version comes from package.json "packageManager" (pnpm@9.1.0); specifying
+      # it here too causes ERR_PNPM_BAD_PM_VERSION.
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm --filter @coachg/backend prisma generate
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Test (engines + services)
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+  docker:
+    needs: build-test
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build backend image
+        run: docker build -f infrastructure/docker/backend.Dockerfile -t coachg/backend:${{ github.ref_name }} .
+      - name: Build frontend image
+        run: docker build -f infrastructure/docker/frontend.Dockerfile -t coachg/frontend:${{ github.ref_name }} .
+      # Push to ArvanCloud registry would go here (requires repo secrets).
