@@ -14,6 +14,7 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
   const qc = useQueryClient();
 
   const client = useQuery({ queryKey: ['client', id], queryFn: () => Api.client(id) });
+  const assessments = useQuery({ queryKey: ['assessments', id], queryFn: () => Api.assessments(id) });
   const goals = useQuery({ queryKey: ['goals', id], queryFn: () => Api.goals(id) });
   const programs = useQuery({ queryKey: ['programs', id], queryFn: () => Api.programs(id) });
   const nutrition = useQuery({ queryKey: ['nutrition', id], queryFn: () => Api.nutrition(id) });
@@ -59,10 +60,58 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
             {client.data.firstName} {client.data.lastName}
           </h1>
         </div>
-        <Button onClick={() => genReport.mutate()} disabled={genReport.isPending}>
-          {genReport.isPending ? 'Queuing…' : 'Generate PDF report'}
-        </Button>
+        <div className="flex gap-3">
+          <Link href={`/coach/clients/${id}/assess`}>
+            <Button variant="outline">New assessment &amp; goal</Button>
+          </Link>
+          <Button onClick={() => genReport.mutate()} disabled={genReport.isPending}>
+            {genReport.isPending ? 'Queuing…' : 'Generate PDF report'}
+          </Button>
+        </div>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Latest assessment</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {!assessments.data?.length ? (
+            <p className="text-sm text-amber-700">
+              No assessment yet.{' '}
+              <Link href={`/coach/clients/${id}/assess`} className="text-brand hover:underline">
+                Add one
+              </Link>{' '}
+              to enable plan generation.
+            </p>
+          ) : (
+            (() => {
+              const a = assessments.data[0]!;
+              return (
+                <div className="grid gap-2 sm:grid-cols-4 text-sm">
+                  <div>
+                    <span className="text-slate-500">Version</span> v{a.version}
+                  </div>
+                  <div>
+                    <span className="text-slate-500">Age</span> {a.age}
+                  </div>
+                  <div>
+                    <span className="text-slate-500">Height/Weight</span> {a.heightCm}cm / {a.weightKg}kg
+                  </div>
+                  <div>
+                    <span className="text-slate-500">Experience</span> {a.experience}
+                  </div>
+                  <div>
+                    <span className="text-slate-500">Sport</span> {a.sport}
+                  </div>
+                  <div>
+                    <span className="text-slate-500">Days/week</span> {a.trainingFrequency}
+                  </div>
+                </div>
+              );
+            })()
+          )}
+        </CardContent>
+      </Card>
 
       {genReport.data ? (
         <Badge tone="success">Report queued ({genReport.data.status}) — id {genReport.data.reportId}</Badge>

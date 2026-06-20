@@ -63,6 +63,29 @@ export interface Assessment {
   trainingFrequency: number;
 }
 
+export interface CreateAssessmentBody {
+  age: number;
+  gender: string;
+  heightCm: number;
+  weightKg: number;
+  bodyFatPct?: number;
+  sport: string;
+  experience: string;
+  injuries: string[];
+  mobilityRestrictions: string[];
+  equipment: string[];
+  trainingFrequency: number;
+  recoveryQuality: number;
+  sleepQuality: number;
+  stressLevel: number;
+}
+
+export interface CreateGoalBody {
+  type: string;
+  sport: string;
+  timeframeWeeks?: number;
+}
+
 export interface ProgramSummary {
   id: string;
   name: string;
@@ -113,7 +136,14 @@ export const Api = {
   client: (id: string) => api<ClientSummary & { assessments: Assessment[]; goals: Goal[] }>(`/clients/${id}`),
 
   assessments: (clientId: string) => api<Assessment[]>(`/clients/${clientId}/assessments`),
+  createAssessment: (clientId: string, body: CreateAssessmentBody) =>
+    api<Assessment>(`/clients/${clientId}/assessments`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
   goals: (clientId: string) => api<Goal[]>(`/clients/${clientId}/goals`),
+  createGoal: (clientId: string, body: CreateGoalBody) =>
+    api<Goal>(`/clients/${clientId}/goals`, { method: 'POST', body: JSON.stringify(body) }),
 
   programs: (clientId: string) => api<ProgramSummary[]>(`/clients/${clientId}/programs`),
   generateProgram: (

@@ -28,8 +28,10 @@ A phased plan from foundation to production. Each phase ends with a deployable, 
 - [ ] NestJS app bootstrap: config, logging, Swagger, health, throttler
 - [ ] Prisma module + migrations + seed
 - [ ] Auth module (Keycloak OIDC + local JWT fallback), RBAC guard, audit interceptor
-- [ ] Next.js app bootstrap: layout, theming, auth, role-based routing
-- [ ] Shared UI package (shadcn/ui)
+- [x] Next.js app bootstrap: layout, theming, auth context, route guarding
+- [x] Coach portal: login, clients list/create, client detail, assessment+goal
+      intake form, plan generation, report queuing
+- [x] Shared UI package (shadcn/ui primitives: button/card/input/badge)
 
 ## Phase 3 — Client, Assessment, Exercise library
 - [x] Clients CRUD (+ ownership-scoped access) — `clients` module
