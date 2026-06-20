@@ -24,6 +24,7 @@ import { ProgressModule } from './progress/progress.module';
 import { ReportsModule } from './reports/reports.module';
 import { EngagementModule } from './engagement/engagement.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { CoachProfileModule } from './coach-profile/coach-profile.module';
 import { HealthModule } from './health/health.module';
 
 @Module({
@@ -59,6 +60,7 @@ import { HealthModule } from './health/health.module';
     ReportsModule,
     EngagementModule,
     AnalyticsModule,
+    CoachProfileModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

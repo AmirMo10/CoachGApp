@@ -264,6 +264,16 @@ export const Api = {
     body: { name: string; objectKey: string; mimeType: string; sizeBytes: number },
   ) => api<DocumentMeta>(`/clients/${clientId}/documents`, { method: 'POST', body: JSON.stringify(body) }),
 
+  // Coach profile / settings
+  coachProfile: () => api<CoachProfile>('/coach/profile'),
+  updateCoachProfile: (body: Partial<Pick<CoachProfile, 'businessName' | 'bio' | 'specialties' | 'logoKey'>>) =>
+    api<CoachProfile>('/coach/profile', { method: 'PATCH', body: JSON.stringify(body) }),
+  presignLogo: (fileName: string, mimeType: string) =>
+    api<{ key: string; url: string }>('/coach/profile/logo-url', {
+      method: 'POST',
+      body: JSON.stringify({ fileName, mimeType }),
+    }),
+
   // Admin
   adminAnalytics: () =>
     api<{
@@ -275,6 +285,18 @@ export const Api = {
       { id: string; businessName?: string; email: string; name: string; isActive: boolean; clientCount: number }[]
     >('/admin/coaches'),
 };
+
+export interface CoachProfile {
+  id: string;
+  email: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  businessName?: string | null;
+  bio?: string | null;
+  specialties: string[];
+  logoKey?: string | null;
+  logoUrl?: string | null;
+}
 
 export interface Exercise {
   id: string;
