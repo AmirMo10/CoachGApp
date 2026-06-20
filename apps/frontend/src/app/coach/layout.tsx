@@ -3,17 +3,19 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { Users, LayoutDashboard, Dumbbell, Settings, LogOut } from 'lucide-react';
+import { Users, LayoutDashboard, Dumbbell, Settings, LogOut, type LucideIcon } from 'lucide-react';
 import { useAuth, homeForRole } from '@/lib/auth';
 import { Logo, Avatar } from '@/components/brand';
 import { PageLoader } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils';
 
-const NAV = [
+type NavItem = { href: string; label: string; icon: LucideIcon; soon?: boolean };
+
+const NAV: NavItem[] = [
   { href: '/coach', label: 'Clients', icon: Users },
   { href: '/coach/overview', label: 'Overview', icon: LayoutDashboard },
   { href: '/coach/library', label: 'Exercise Library', icon: Dumbbell },
-  { href: '/coach/settings', label: 'Settings', icon: Settings, soon: true },
+  { href: '/coach/settings', label: 'Settings', icon: Settings },
 ];
 
 export default function CoachLayout({ children }: { children: React.ReactNode }) {
