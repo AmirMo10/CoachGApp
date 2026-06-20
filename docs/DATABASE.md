@@ -57,7 +57,9 @@ AuditLog (global)
 - **RecoveryPlan** — sleep target, hydration target, mobility routine[], recovery score, deload recommendation.
 
 ### Bloodwork (sensitive)
-- **BloodworkPanel** — date, lab, notes. Encrypted at field level.
+- **BloodworkPanel** — date, lab, notes. Sensitive PII: protected by Postgres
+  volume encryption at rest today; app-level field encryption (via `ENCRYPTION_KEY`)
+  is planned and reserved for marker values/notes.
 - **BloodMarker** — marker (FASTING_GLUCOSE, HBA1C, HDL, LDL, TRIGLYCERIDES, VITAMIN_D, TESTOSTERONE, FERRITIN), value, unit, referenceRange, flag (LOW/NORMAL/HIGH). Educational insights only — **never diagnostic**.
 
 ### Progress

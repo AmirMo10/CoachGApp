@@ -1,4 +1,3 @@
-import { createHash } from 'node:crypto';
 import {
   Difficulty,
   ExperienceLevel,
@@ -10,8 +9,10 @@ import {
   Sport,
 } from '@prisma/client';
 
+import { hashPassword } from '../src/auth/password';
+
 const prisma = new PrismaClient();
-const hash = (p: string) => createHash('sha256').update(p).digest('hex');
+const hash = (p: string) => hashPassword(p);
 
 /** Starter exercise library. The full 1000+ catalog is loaded via the Phase-3 ETL importer. */
 const STARTER_EXERCISES = [
@@ -162,7 +163,8 @@ async function main() {
   // Demo coach
   const coachUser = await prisma.user.upsert({
     where: { email: 'coach@coachg.dev' },
-    update: {},
+    // Keep the password hash current (idempotent across hashing-scheme changes).
+    update: { passwordHash: hash('password123') },
     create: {
       email: 'coach@coachg.dev',
       role: Role.COACH,

@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { createHash, timingSafeEqual } from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service';
+import { verifyPassword } from './password';
 
 /**
  * Local-dev auth fallback. In production AUTH_PROVIDER=keycloak delegates token
@@ -15,20 +15,12 @@ export class AuthService {
     private readonly jwt: JwtService,
   ) {}
 
-  private hash(password: string): string {
-    return createHash('sha256').update(password).digest('hex');
-  }
-
   async login(email: string, password: string) {
     const user = await this.prisma.user.findUnique({
       where: { email },
       include: { coachProfile: true, clientProfile: true },
     });
-    if (!user || !user.passwordHash) throw new UnauthorizedException('Invalid credentials');
-
-    const provided = Buffer.from(this.hash(password));
-    const stored = Buffer.from(user.passwordHash);
-    if (provided.length !== stored.length || !timingSafeEqual(provided, stored)) {
+    if (!user || !user.passwordHash || !verifyPassword(password, user.passwordHash)) {
       throw new UnauthorizedException('Invalid credentials');
     }
 

@@ -1,0 +1,29 @@
+import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
+
+/**
+ * Password hashing for the local-dev auth fallback.
+ *
+ * Uses scrypt (a memory-hard KDF built into Node) with a per-password random
+ * salt — NOT a plain fast hash like SHA-256, which is unsuitable for passwords.
+ * Format: `scrypt$<saltHex>$<hashHex>`.
+ *
+ * In production, authentication is delegated to Keycloak and these helpers are
+ * unused; they exist so the dev login is still credential-safe.
+ */
+const KEYLEN = 64;
+const COST = 16384; // 2^14
+
+export function hashPassword(password: string): string {
+  const salt = randomBytes(16);
+  const dk = scryptSync(password, salt, KEYLEN, { N: COST });
+  return `scrypt$${salt.toString('hex')}$${dk.toString('hex')}`;
+}
+
+export function verifyPassword(password: string, stored: string): boolean {
+  const parts = stored.split('$');
+  if (parts.length !== 3 || parts[0] !== 'scrypt') return false;
+  const salt = Buffer.from(parts[1]!, 'hex');
+  const expected = Buffer.from(parts[2]!, 'hex');
+  const actual = scryptSync(password, salt, expected.length, { N: COST });
+  return expected.length === actual.length && timingSafeEqual(expected, actual);
+}
