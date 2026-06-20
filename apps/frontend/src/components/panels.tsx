@@ -9,12 +9,14 @@ import { Input, Select, Field } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { PageLoader, Spinner } from '@/components/ui/spinner';
+import { useT } from '@/lib/i18n';
 
 const flagTone = (f: string) => (f === 'HIGH' || f === 'LOW' ? 'warn' : 'success');
 const MARKER_TYPES = ['FASTING_GLUCOSE', 'HBA1C', 'HDL', 'LDL', 'TRIGLYCERIDES', 'VITAMIN_D', 'TESTOSTERONE', 'FERRITIN'];
 
 // ── Messages ──
 export function MessagesPanel({ clientId, role }: { clientId: string; role: 'COACH' | 'CLIENT' }) {
+  const { t } = useT();
   const qc = useQueryClient();
   const messages = useQuery({ queryKey: ['messages', clientId], queryFn: () => Api.messages(clientId) });
   const [body, setBody] = useState('');
@@ -38,7 +40,7 @@ export function MessagesPanel({ clientId, role }: { clientId: string; role: 'COA
           {messages.isLoading ? (
             <PageLoader />
           ) : !messages.data?.length ? (
-            <p className="py-6 text-center text-sm text-slate-400">No messages yet.</p>
+            <p className="py-6 text-center text-sm text-slate-400">{t('pn.noMessages')}</p>
           ) : (
             messages.data.map((m) => (
               <div
@@ -65,7 +67,7 @@ export function MessagesPanel({ clientId, role }: { clientId: string; role: 'COA
             if (body.trim()) send.mutate(body.trim());
           }}
         >
-          <Input value={body} onChange={(e) => setBody(e.target.value)} placeholder="Write a message…" />
+          <Input value={body} onChange={(e) => setBody(e.target.value)} placeholder={t('pn.writeMessage')} />
           {role === 'COACH' ? (
             <Button type="button" variant="outline" onClick={() => draft.mutate()} disabled={draft.isPending} title="AI draft">
               {draft.isPending ? <Spinner /> : <Sparkles className="size-4" />}
@@ -82,6 +84,7 @@ export function MessagesPanel({ clientId, role }: { clientId: string; role: 'COA
 
 // ── Bloodwork ──
 export function BloodworkPanel({ clientId, canAdd }: { clientId: string; canAdd: boolean }) {
+  const { t } = useT();
   const qc = useQueryClient();
   const panels = useQuery({ queryKey: ['bloodwork', clientId], queryFn: () => Api.bloodwork(clientId) });
   const [type, setType] = useState('VITAMIN_D');
@@ -111,31 +114,29 @@ export function BloodworkPanel({ clientId, canAdd }: { clientId: string; canAdd:
               }}
             >
               <div className="w-44">
-                <Field label="Marker">
+                <Field label={t('pn.marker')}>
                   <Select value={type} onChange={(e) => setType(e.target.value)}>
-                    {MARKER_TYPES.map((t) => (
-                      <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>
+                    {MARKER_TYPES.map((m) => (
+                      <option key={m} value={m}>{m.replace(/_/g, ' ')}</option>
                     ))}
                   </Select>
                 </Field>
               </div>
               <div className="w-28">
-                <Field label="Value">
+                <Field label={t('pn.value')}>
                   <Input type="number" step="0.1" value={value} onChange={(e) => setValue(e.target.value)} />
                 </Field>
               </div>
               <div className="min-w-[160px] flex-1">
-                <Field label="Notes (optional)">
+                <Field label={t('pn.notesOptional')}>
                   <Input value={notes} onChange={(e) => setNotes(e.target.value)} />
                 </Field>
               </div>
               <Button type="submit" disabled={!value || add.isPending}>
-                {add.isPending ? <Spinner /> : <Plus className="size-4" />} Add
+                {add.isPending ? <Spinner /> : <Plus className="size-4" />} {t('common.add')}
               </Button>
             </form>
-            <p className="mt-2 text-xs text-slate-400">
-              Educational insights only — not medical advice. Values are encrypted at rest.
-            </p>
+            <p className="mt-2 text-xs text-slate-400">{t('pn.eduDisclaimer')}</p>
           </CardContent>
         </Card>
       ) : null}
@@ -143,7 +144,7 @@ export function BloodworkPanel({ clientId, canAdd }: { clientId: string; canAdd:
       {panels.isLoading ? (
         <PageLoader />
       ) : !panels.data?.length ? (
-        <p className="py-6 text-center text-sm text-slate-400">No bloodwork on file.</p>
+        <p className="py-6 text-center text-sm text-slate-400">{t('pn.noBloodwork')}</p>
       ) : (
         panels.data.map((p) => (
           <Card key={p.id}>
@@ -177,6 +178,7 @@ export function BloodworkPanel({ clientId, canAdd }: { clientId: string; canAdd:
 
 // ── Notes (coach only) ──
 export function NotesPanel({ clientId }: { clientId: string }) {
+  const { t } = useT();
   const qc = useQueryClient();
   const notes = useQuery({ queryKey: ['notes', clientId], queryFn: () => Api.notes(clientId) });
   const [body, setBody] = useState('');
@@ -198,7 +200,7 @@ export function NotesPanel({ clientId }: { clientId: string }) {
             if (body.trim()) add.mutate();
           }}
         >
-          <Input value={body} onChange={(e) => setBody(e.target.value)} placeholder="Add a private coach note…" />
+          <Input value={body} onChange={(e) => setBody(e.target.value)} placeholder={t('pn.addNote')} />
           <Button type="submit" disabled={!body.trim() || add.isPending}>
             {add.isPending ? <Spinner /> : <Plus className="size-4" />}
           </Button>
@@ -206,7 +208,7 @@ export function NotesPanel({ clientId }: { clientId: string }) {
         {notes.isLoading ? (
           <PageLoader />
         ) : !notes.data?.length ? (
-          <p className="py-4 text-center text-sm text-slate-400">No notes yet.</p>
+          <p className="py-4 text-center text-sm text-slate-400">{t('pn.noNotes')}</p>
         ) : (
           <ul className="space-y-2">
             {notes.data.map((n) => (
@@ -226,6 +228,7 @@ export function NotesPanel({ clientId }: { clientId: string }) {
 const ACCEPTED = 'image/jpeg,image/png,image/webp,application/pdf';
 
 export function DocumentsPanel({ clientId, canUpload = false }: { clientId: string; canUpload?: boolean }) {
+  const { t } = useT();
   const qc = useQueryClient();
   const docs = useQuery({ queryKey: ['documents', clientId], queryFn: () => Api.documents(clientId) });
   const fileRef = useRef<HTMLInputElement>(null);
@@ -270,7 +273,7 @@ export function DocumentsPanel({ clientId, canUpload = false }: { clientId: stri
             />
             {upload.isPending ? (
               <span className="flex items-center gap-2 text-sm text-slate-500">
-                <Spinner /> Uploading…
+                <Spinner /> {t('settings.uploading')}
               </span>
             ) : null}
             <span className="text-xs text-slate-400">JPG/PNG/WebP/PDF</span>
@@ -283,7 +286,7 @@ export function DocumentsPanel({ clientId, canUpload = false }: { clientId: stri
         {docs.isLoading ? (
           <PageLoader />
         ) : !docs.data?.length ? (
-          <p className="py-6 text-center text-sm text-slate-400">No documents yet.</p>
+          <p className="py-6 text-center text-sm text-slate-400">{t('pn.noDocuments')}</p>
         ) : (
           <ul className="divide-y divide-slate-100">
             {docs.data.map((d) => (

@@ -57,8 +57,8 @@ export default function CoachDashboard() {
       {open ? (
         <Card className="animate-fade-up">
           <CardHeader>
-            <CardTitle>Add a client</CardTitle>
-            <CardDescription>Create a profile, then run an assessment to unlock plans.</CardDescription>
+            <CardTitle>{t('dash.addClientTitle')}</CardTitle>
+            <CardDescription>{t('dash.addClientDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             <form
@@ -69,17 +69,17 @@ export default function CoachDashboard() {
               }}
             >
               <div className="min-w-[150px] flex-1">
-                <Field label="First name">
+                <Field label={t('common.firstName')}>
                   <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
                 </Field>
               </div>
               <div className="min-w-[150px] flex-1">
-                <Field label="Last name">
+                <Field label={t('common.lastName')}>
                   <Input value={lastName} onChange={(e) => setLastName(e.target.value)} required />
                 </Field>
               </div>
               <Button type="submit" disabled={createClient.isPending}>
-                {createClient.isPending ? 'Adding…' : 'Save client'}
+                {createClient.isPending ? t('common.loading') : t('dash.saveClient')}
               </Button>
             </form>
           </CardContent>
@@ -88,20 +88,20 @@ export default function CoachDashboard() {
 
       <Card>
         <CardHeader>
-          <CardTitle>All clients</CardTitle>
+          <CardTitle>{t('dash.allClients')}</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
           {isLoading ? (
             <PageLoader />
           ) : error ? (
-            <p className="py-10 text-center text-red-600">Failed to load clients.</p>
+            <p className="py-10 text-center text-red-600">{t('common.failed')}</p>
           ) : !clients?.length ? (
-            <div className="rounded-2xl border border-dashed border-slate-300 py-14 text-center dot-grid">
+            <div className="rounded-2xl border border-dashed border-slate-300 py-14 text-center dot-grid dark:border-slate-700">
               <Users className="mx-auto size-8 text-slate-300" />
-              <p className="mt-3 font-medium text-slate-700">No clients yet</p>
-              <p className="text-sm text-slate-500">Add your first athlete to get started.</p>
+              <p className="mt-3 font-medium text-slate-700">{t('dash.noClients')}</p>
+              <p className="text-sm text-slate-500">{t('dash.noClientsDesc')}</p>
               <Button className="mt-4" onClick={() => setOpen(true)}>
-                <UserPlus className="size-4" /> Add client
+                <UserPlus className="size-4" /> {t('dash.addClient')}
               </Button>
             </div>
           ) : (
@@ -110,14 +110,14 @@ export default function CoachDashboard() {
                 <li key={c.id}>
                   <Link
                     href={`/coach/clients/${c.id}`}
-                    className="group flex items-center gap-4 rounded-xl px-2 py-3 transition-colors hover:bg-slate-50"
+                    className="group flex items-center gap-4 rounded-xl px-2 py-3 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800"
                   >
                     <Avatar name={`${c.firstName} ${c.lastName}`} />
                     <div className="min-w-0 flex-1">
                       <p className="font-medium text-ink">
                         {c.firstName} {c.lastName}
                       </p>
-                      <p className="truncate text-sm text-slate-400">{c.email ?? 'No email on file'}</p>
+                      <p className="truncate text-sm text-slate-400">{c.email ?? t('dash.noEmail')}</p>
                     </div>
                     <ChevronRight className="size-5 text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:text-brand-500" />
                   </Link>

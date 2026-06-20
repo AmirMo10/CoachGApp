@@ -8,6 +8,7 @@ import { Api, ProgramWeekFull } from '@/lib/api';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageLoader } from '@/components/ui/spinner';
+import { useT } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
 const phaseTone: Record<string, 'success' | 'info' | 'warn' | 'default'> = {
@@ -19,25 +20,26 @@ const phaseTone: Record<string, 'success' | 'info' | 'warn' | 'default'> = {
 
 /** Shared week-by-week program viewer used by both coach and client portals. */
 export function ProgramView({ programId, backHref }: { programId: string; backHref: string }) {
+  const { t } = useT();
   const program = useQuery({ queryKey: ['program', programId], queryFn: () => Api.program(programId) });
   const [openWeek, setOpenWeek] = useState(1);
 
   if (program.isLoading) return <PageLoader />;
-  if (program.error || !program.data) return <p className="text-red-600">Program not found.</p>;
+  if (program.error || !program.data) return <p className="text-red-600">{t('pv.notFound')}</p>;
   const p = program.data;
 
   return (
     <div className="space-y-6">
       <Link href={backHref} className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-brand-600">
-        <ArrowLeft className="size-4" /> Back
+        <ArrowLeft className="size-4" /> {t('common.back')}
       </Link>
 
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-ink">{p.name}</h1>
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <Badge tone="info">{p.periodization}</Badge>
-          <Badge>{p.durationWeeks} weeks</Badge>
-          <Badge>{p.daysPerWeek} days/week</Badge>
+          <Badge>{p.durationWeeks} {t('cd.weeks')}</Badge>
+          <Badge>{p.daysPerWeek} {t('cd.daysWeek')}</Badge>
           <Badge tone={p.status === 'ACTIVE' ? 'success' : 'default'}>{p.status}</Badge>
         </div>
       </div>
@@ -49,7 +51,7 @@ export function ProgramView({ programId, backHref }: { programId: string; backHr
               <span className="grid size-7 place-items-center rounded-lg bg-brand-50 text-brand-600">
                 <Sparkles className="size-[18px]" />
               </span>
-              Coaching rationale
+              {t('pv.rationale')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -77,6 +79,7 @@ export function ProgramView({ programId, backHref }: { programId: string; backHr
 }
 
 function WeekRow({ week, open, onToggle }: { week: ProgramWeekFull; open: boolean; onToggle: () => void }) {
+  const { t } = useT();
   return (
     <Card className={cn('overflow-hidden transition-shadow', open && 'shadow-glow')}>
       <button
@@ -89,9 +92,9 @@ function WeekRow({ week, open, onToggle }: { week: ProgramWeekFull; open: boolea
           </span>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-ink">Week {week.weekIndex}</span>
+              <span className="font-semibold text-ink">{t('pv.week')} {week.weekIndex}</span>
               <Badge tone={phaseTone[week.phase] ?? 'default'}>{week.phase}</Badge>
-              {week.isDeload ? <Badge tone="warn">Deload</Badge> : null}
+              {week.isDeload ? <Badge tone="warn">{t('common.deload')}</Badge> : null}
             </div>
             <div className="mt-0.5 flex items-center gap-3 text-xs text-slate-400">
               <span className="inline-flex items-center gap-1">
@@ -109,22 +112,22 @@ function WeekRow({ week, open, onToggle }: { week: ProgramWeekFull; open: boolea
       {open ? (
         <div className="grid gap-4 border-t border-slate-100 bg-slate-50/50 p-5 md:grid-cols-2">
           {week.days.map((day) => (
-            <div key={day.id} className="rounded-xl border border-slate-200/70 bg-white p-4 shadow-soft">
+            <div key={day.id} className="rounded-xl border border-slate-200/70 bg-white p-4 shadow-soft dark:border-slate-800 dark:bg-slate-900">
               <div className="flex items-center justify-between">
-                <span className="font-semibold text-ink">Day {day.dayIndex}</span>
+                <span className="font-semibold text-ink">{t('pv.day')} {day.dayIndex}</span>
                 <Badge>{day.focus}</Badge>
               </div>
               {day.payload?.warmup?.length ? (
-                <p className="mt-2 text-xs text-slate-400">Warm-up: {day.payload.warmup.join(' · ')}</p>
+                <p className="mt-2 text-xs text-slate-400">{t('pv.warmup')}: {day.payload.warmup.join(' · ')}</p>
               ) : null}
               <table className="mt-3 w-full text-sm">
                 <thead>
                   <tr className="text-left text-[11px] uppercase tracking-wide text-slate-400">
-                    <th className="pb-1 font-medium">Exercise</th>
-                    <th className="pb-1 text-center font-medium">Sets</th>
-                    <th className="pb-1 text-center font-medium">Reps</th>
-                    <th className="pb-1 text-center font-medium">Load</th>
-                    <th className="pb-1 text-center font-medium">Rest</th>
+                    <th className="pb-1 font-medium">{t('pv.exercise')}</th>
+                    <th className="pb-1 text-center font-medium">{t('pv.sets')}</th>
+                    <th className="pb-1 text-center font-medium">{t('pv.reps')}</th>
+                    <th className="pb-1 text-center font-medium">{t('pv.load')}</th>
+                    <th className="pb-1 text-center font-medium">{t('pv.rest')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -143,7 +146,7 @@ function WeekRow({ week, open, onToggle }: { week: ProgramWeekFull; open: boolea
               </table>
               {day.payload?.conditioning?.length ? (
                 <p className="mt-3 rounded-lg bg-brand-50 px-3 py-2 text-xs text-brand-700">
-                  Conditioning: {day.payload.conditioning.join(' · ')}
+                  {t('pv.conditioning')}: {day.payload.conditioning.join(' · ')}
                 </p>
               ) : null}
             </div>

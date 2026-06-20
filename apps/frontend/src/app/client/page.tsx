@@ -37,7 +37,7 @@ export default function ClientDashboard() {
     },
   });
 
-  if (!id) return <p className="text-slate-500">No athlete profile linked to this account.</p>;
+  if (!id) return <p className="text-slate-500">{t('client.noProfile')}</p>;
 
   const latestProgram = programs.data?.[0];
   const latestNutrition = nutrition.data?.[0];
@@ -69,7 +69,7 @@ export default function ClientDashboard() {
         <Stat
           label={t('client.recovery')}
           value={latestRecovery ? `${latestRecovery.recoveryScore}/100` : '—'}
-          sub={latestRecovery?.deloadRecommended ? 'Deload advised' : 'On track'}
+          sub={latestRecovery?.deloadRecommended ? t('common.deloadAdvised') : t('common.onTrack')}
           icon={<HeartPulse />}
           tone="amber"
         />
@@ -82,7 +82,7 @@ export default function ClientDashboard() {
           </CardHeader>
           <CardContent className="space-y-2">
             {!programs.data?.length ? (
-              <p className="text-sm text-slate-400">No program yet — your coach will assign one.</p>
+              <p className="text-sm text-slate-400">{t('client.noProgram')}</p>
             ) : (
               programs.data.map((p) => (
                 <Link
@@ -94,7 +94,7 @@ export default function ClientDashboard() {
                     <span className="font-medium text-ink">{p.name}</span>
                     <Badge tone={p.status === 'ACTIVE' ? 'success' : 'default'}>{p.status}</Badge>
                   </div>
-                  <p className="mt-1 text-sm text-slate-500">{p.durationWeeks} weeks · {p.daysPerWeek} days/week · view →</p>
+                  <p className="mt-1 text-sm text-slate-500">{p.durationWeeks} {t('cd.weeks')} · {p.daysPerWeek} {t('cd.daysWeek')} · {t('common.view')} →</p>
                 </Link>
               ))
             )}
@@ -111,17 +111,17 @@ export default function ClientDashboard() {
               }}
             >
               <div className="w-24">
-                <Field label="Weight kg">
+                <Field label={t('common.weight')}>
                   <Input type="number" step="0.1" value={weight} onChange={(e) => setWeight(e.target.value)} />
                 </Field>
               </div>
               <Button type="submit" size="sm" disabled={!weight || log.isPending}>
-                {log.isPending ? <Spinner /> : 'Log'}
+                {log.isPending ? <Spinner /> : t('common.log')}
               </Button>
             </form>
           }>
             <CardTitle>{t('client.progress')}</CardTitle>
-            <CardDescription>Your bodyweight trend.</CardDescription>
+            <CardDescription>{t('client.bodyweightTrend')}</CardDescription>
           </CardHeader>
           <CardContent>
             <LineChart

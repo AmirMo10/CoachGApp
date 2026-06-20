@@ -42,27 +42,27 @@ export default function LibraryPage() {
 
       <Card>
         <CardContent className="grid gap-4 pt-5 sm:grid-cols-4">
-          <Field label="Search">
+          <Field label={t('common.search')}>
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
-              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Name…" className="pl-9" />
+              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('library.searchPlaceholder')} className="pl-9" />
             </div>
           </Field>
-          <Field label="Movement pattern">
+          <Field label={t('library.movementPattern')}>
             <Select value={pattern} onChange={(e) => setPattern(e.target.value)}>
               {PATTERNS.map((p) => (
-                <option key={p} value={p}>{p ? p.replace(/_/g, ' ') : 'All patterns'}</option>
+                <option key={p} value={p}>{p ? p.replace(/_/g, ' ') : t('library.allPatterns')}</option>
               ))}
             </Select>
           </Field>
-          <Field label="Difficulty">
+          <Field label={t('library.difficulty')}>
             <Select value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
               {DIFFICULTY.map((d) => (
-                <option key={d} value={d}>{d || 'All levels'}</option>
+                <option key={d} value={d}>{d || t('library.allLevels')}</option>
               ))}
             </Select>
           </Field>
-          <Field label="Equipment">
+          <Field label={t('library.equipment')}>
             <Input value={equipment} onChange={(e) => setEquipment(e.target.value)} placeholder="barbell" />
           </Field>
         </CardContent>
@@ -71,10 +71,10 @@ export default function LibraryPage() {
       {isLoading ? (
         <PageLoader />
       ) : error ? (
-        <p className="text-red-600">Failed to load exercises.</p>
+        <p className="text-red-600">{t('common.failed')}</p>
       ) : (
         <>
-          <p className="text-sm text-slate-500">{filtered.length} exercises</p>
+          <p className="text-sm text-slate-500">{t('library.count', { n: String(filtered.length) })}</p>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.slice(0, 120).map((ex) => (
               <div key={ex.id} className="rounded-2xl border border-slate-200/70 bg-white p-4 shadow-card dark:border-slate-800 dark:bg-slate-900">
@@ -100,7 +100,7 @@ export default function LibraryPage() {
             ))}
           </div>
           {filtered.length > 120 ? (
-            <p className="text-center text-sm text-slate-400">Showing first 120 — refine filters to narrow.</p>
+            <p className="text-center text-sm text-slate-400">{t('library.showingFirst')}</p>
           ) : null}
         </>
       )}
