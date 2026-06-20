@@ -1,12 +1,19 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { AssessmentInput } from '@coachg/types';
 import { generateRecoveryPlan } from '@coachg/recovery-engine';
+import { AiClient, writeShortNote } from '@coachg/ai';
 import { PrismaService } from '../prisma/prisma.service';
 import { ClientsService } from '../clients/clients.service';
 import { AuthUser } from '../auth/current-user.decorator';
 
 @Injectable()
 export class RecoveryService {
+  private readonly ai = new AiClient({
+    apiKey: process.env.ANTHROPIC_API_KEY ?? '',
+    model: process.env.ANTHROPIC_MODEL,
+    tokenBudget: Number(process.env.AI_TOKEN_BUDGET ?? 0),
+  });
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly clients: ClientsService,
@@ -39,6 +46,15 @@ export class RecoveryService {
 
     const result = generateRecoveryPlan(input);
 
+    const aiNotes = await writeShortNote(
+      this.ai,
+      'You are a recovery coach. Briefly, supportively explain a recovery plan. Never give medical advice.',
+      `Recovery score ${result.recoveryScore}/100, sleep target ${result.sleepTargetHours}h, deload ${result.deloadRecommended}. Write 2 sentences.`,
+      result.deloadRecommended
+        ? `Your recovery markers are low (score ${result.recoveryScore}/100). Prioritise sleep and consider the recommended deload before pushing intensity again.`
+        : `Recovery is on track (score ${result.recoveryScore}/100). Keep your sleep and hydration consistent to sustain training quality.`,
+    );
+
     return this.prisma.recoveryPlan.create({
       data: {
         clientId,
@@ -48,6 +64,7 @@ export class RecoveryService {
         recoveryScore: result.recoveryScore,
         deloadRecommended: result.deloadRecommended,
         recommendations: result.recommendations,
+        aiNotes,
       },
     });
   }

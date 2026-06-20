@@ -1,12 +1,19 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { AssessmentInput } from '@coachg/types';
 import { generateNutritionPlan } from '@coachg/nutrition-engine';
+import { AiClient, writeShortNote } from '@coachg/ai';
 import { PrismaService } from '../prisma/prisma.service';
 import { ClientsService } from '../clients/clients.service';
 import { AuthUser } from '../auth/current-user.decorator';
 
 @Injectable()
 export class NutritionService {
+  private readonly ai = new AiClient({
+    apiKey: process.env.ANTHROPIC_API_KEY ?? '',
+    model: process.env.ANTHROPIC_MODEL,
+    tokenBudget: Number(process.env.AI_TOKEN_BUDGET ?? 0),
+  });
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly clients: ClientsService,
@@ -41,6 +48,13 @@ export class NutritionService {
 
     const result = generateNutritionPlan(input, goal.type);
 
+    const aiNotes = await writeShortNote(
+      this.ai,
+      'You are a sports nutritionist. Explain a nutrition plan briefly and supportively. Never change the numbers.',
+      `Strategy ${result.strategy}, ${result.goalCalories} kcal (P${result.macros.proteinG}/C${result.macros.carbsG}/F${result.macros.fatG}). Write 2 sentences of guidance.`,
+      `Target ${result.goalCalories} kcal/day on a ${result.strategy.toLowerCase().replace(/_/g, ' ')} approach. Hit your protein target first, keep meals consistent, and adjust portions based on weekly progress.`,
+    );
+
     return this.prisma.nutritionPlan.create({
       data: {
         clientId,
@@ -54,6 +68,7 @@ export class NutritionService {
         fatG: result.macros.fatG,
         mealTiming: result.mealTiming,
         shoppingList: result.shoppingList,
+        aiNotes,
         meals: {
           create: result.meals.map((m) => ({
             name: m.name,

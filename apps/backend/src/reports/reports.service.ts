@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import type { ReportData } from '@coachg/report-engine';
+import { AiClient, writeReportNarrative } from '@coachg/ai';
 import { PrismaService } from '../prisma/prisma.service';
 import { ClientsService } from '../clients/clients.service';
 import { QueueService } from '../queue/queue.service';
@@ -8,6 +9,12 @@ import { AuthUser } from '../auth/current-user.decorator';
 
 @Injectable()
 export class ReportsService {
+  private readonly ai = new AiClient({
+    apiKey: process.env.ANTHROPIC_API_KEY ?? '',
+    model: process.env.ANTHROPIC_MODEL,
+    tokenBudget: Number(process.env.AI_TOKEN_BUDGET ?? 0),
+  });
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly clients: ClientsService,
@@ -42,6 +49,15 @@ export class ReportsService {
         .coach({ include: { user: true } }),
     ]);
 
+    // AI-written narrative (with deterministic fallback baked into the helper).
+    const narrative = await writeReportNarrative(this.ai, {
+      clientName: `${client.firstName} ${client.lastName}`,
+      goal: goal?.type,
+      sport: assessment?.sport,
+      experience: assessment?.experience,
+      programName: program?.name,
+    });
+
     const data: ReportData = {
       brand: {
         businessName: coach?.businessName ?? 'Coach"G"',
@@ -61,9 +77,8 @@ export class ReportsService {
             { label: 'Training days/week', value: String(assessment.trainingFrequency) },
           ]
         : [],
-      goalAnalysis: goal
-        ? `Primary goal: ${goal.type}${goal.sport !== 'NONE' ? ` for ${goal.sport}` : ''}.`
-        : 'No goal recorded yet.',
+      goalAnalysis: narrative.goalAnalysis,
+      performanceAnalysis: narrative.performanceAnalysis,
       program: program
         ? {
             name: program.name,

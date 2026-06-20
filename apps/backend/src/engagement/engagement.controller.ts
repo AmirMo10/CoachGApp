@@ -50,6 +50,12 @@ export class EngagementController {
     return this.engagement.sendMessage(user, id, dto.body);
   }
 
+  @Roles(Role.COACH, Role.ADMIN)
+  @Post('messages/draft')
+  draftReply(@CurrentUser() user: AuthUser, @Param('id') id: string) {
+    return this.engagement.draftReply(user, id);
+  }
+
   // Documents
   @Get('documents')
   listDocuments(@CurrentUser() user: AuthUser, @Param('id') id: string) {

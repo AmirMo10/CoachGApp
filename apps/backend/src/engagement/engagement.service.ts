@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Role } from '@coachg/types';
+import { AiClient, draftMessageReply } from '@coachg/ai';
 import { PrismaService } from '../prisma/prisma.service';
 import { ClientsService } from '../clients/clients.service';
 import { StorageService } from '../storage/storage.service';
@@ -7,11 +8,31 @@ import { AuthUser } from '../auth/current-user.decorator';
 
 @Injectable()
 export class EngagementService {
+  private readonly ai = new AiClient({
+    apiKey: process.env.ANTHROPIC_API_KEY ?? '',
+    model: process.env.ANTHROPIC_MODEL,
+    tokenBudget: Number(process.env.AI_TOKEN_BUDGET ?? 0),
+  });
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly clients: ClientsService,
     private readonly storage: StorageService,
   ) {}
+
+  /** AI-assisted draft reply to the latest client message (not persisted). */
+  async draftReply(user: AuthUser, clientId: string) {
+    const client = await this.clients.getOwned(user, clientId);
+    const last = await this.prisma.message.findFirst({
+      where: { clientId, senderRole: Role.CLIENT },
+      orderBy: { createdAt: 'desc' },
+    });
+    return draftMessageReply(
+      this.ai,
+      `${client.firstName} ${client.lastName}`,
+      last?.body ?? 'Checking in on my progress.',
+    );
+  }
 
   // ── Notes (coach-only) ──
   async listNotes(user: AuthUser, clientId: string) {
