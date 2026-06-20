@@ -4,17 +4,18 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { ArrowLeft, User, ShieldAlert, BatteryCharging, Target } from 'lucide-react';
 import { Api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
-import { Input, Select } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input, Select, Field } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Spinner } from '@/components/ui/spinner';
 
 const GENDERS = ['MALE', 'FEMALE', 'OTHER'];
 const SPORTS = ['NONE', 'FOOTBALL', 'BASKETBALL', 'VOLLEYBALL', 'COMBAT', 'RUNNING'];
 const EXPERIENCE = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED'];
 const GOAL_TYPES = ['FAT_LOSS', 'MUSCLE_GAIN', 'RECOMP', 'PERFORMANCE', 'GENERAL_FITNESS'];
 
-/** Parse a comma-separated list into a trimmed string array. */
 const toList = (s: string): string[] =>
   s
     .split(',')
@@ -76,46 +77,44 @@ export default function AssessPage({ params }: { params: { id: string } }) {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['client', id] });
+      qc.invalidateQueries({ queryKey: ['assessments', id] });
       qc.invalidateQueries({ queryKey: ['goals', id] });
       router.push(`/coach/clients/${id}`);
     },
     onError: (e) => setError(e instanceof Error ? e.message : 'Failed to save'),
   });
 
-  const num = (label: string, key: keyof typeof form, min?: number, max?: number) => (
-    <div>
-      <label className="text-sm text-slate-600">{label}</label>
-      <Input
-        type="number"
-        min={min}
-        max={max}
-        value={String(form[key])}
-        onChange={(e) => set(key, e.target.value as never)}
-      />
-    </div>
+  const num = (label: string, key: keyof typeof form, hint?: string) => (
+    <Field label={label} hint={hint}>
+      <Input type="number" value={String(form[key])} onChange={(e) => set(key, e.target.value as never)} />
+    </Field>
   );
-
   const sel = (label: string, key: keyof typeof form, options: string[]) => (
-    <div>
-      <label className="text-sm text-slate-600">{label}</label>
+    <Field label={label}>
       <Select value={String(form[key])} onChange={(e) => set(key, e.target.value as never)}>
         {options.map((o) => (
           <option key={o} value={o}>
-            {o}
+            {o.replace('_', ' ')}
           </option>
         ))}
       </Select>
-    </div>
+    </Field>
   );
 
+  const sectionIcon = 'grid size-7 place-items-center rounded-lg bg-brand-50 text-brand-600';
+
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-3xl space-y-6">
+      <Link
+        href={`/coach/clients/${id}`}
+        className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-brand-600"
+      >
+        <ArrowLeft className="size-4" /> Back to client
+      </Link>
+
       <div>
-        <Link href={`/coach/clients/${id}`} className="text-sm text-brand hover:underline">
-          ← Back to client
-        </Link>
-        <h1 className="text-2xl font-semibold mt-1">New Assessment &amp; Goal</h1>
-        <p className="text-slate-600">Capture intake data; a goal is created alongside it.</p>
+        <h1 className="text-2xl font-bold tracking-tight text-ink">New assessment &amp; goal</h1>
+        <p className="mt-1 text-slate-500">Capture intake data; a goal is created alongside it.</p>
       </div>
 
       <form
@@ -124,77 +123,101 @@ export default function AssessPage({ params }: { params: { id: string } }) {
           setError(null);
           submit.mutate();
         }}
-        className="space-y-6"
+        className="space-y-5"
       >
         <Card>
           <CardHeader>
-            <CardTitle>Athlete profile</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <span className={sectionIcon}>
+                <User className="size-[18px]" />
+              </span>
+              Athlete profile
+            </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-3">
-            {num('Age', 'age', 10, 100)}
+            {num('Age', 'age')}
             {sel('Gender', 'gender', GENDERS)}
             {sel('Experience', 'experience', EXPERIENCE)}
-            {num('Height (cm)', 'heightCm', 100, 250)}
-            {num('Weight (kg)', 'weightKg', 30, 300)}
-            {num('Body fat % (optional)', 'bodyFatPct', 2, 60)}
+            {num('Height (cm)', 'heightCm')}
+            {num('Weight (kg)', 'weightKg')}
+            {num('Body fat %', 'bodyFatPct', 'optional')}
             {sel('Sport', 'sport', SPORTS)}
-            {num('Training days/week', 'trainingFrequency', 1, 7)}
+            {num('Training days / week', 'trainingFrequency')}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Constraints &amp; equipment</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <span className={sectionIcon}>
+                <ShieldAlert className="size-[18px]" />
+              </span>
+              Constraints &amp; equipment
+            </CardTitle>
+            <CardDescription>Comma-separated. These drive the rule engine&apos;s safety filtering.</CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-4 sm:grid-cols-1">
-            <div>
-              <label className="text-sm text-slate-600">Injuries (comma-separated)</label>
+          <CardContent className="space-y-4">
+            <Field label="Injuries" hint="e.g. knee, shoulder">
               <Input value={form.injuries} onChange={(e) => set('injuries', e.target.value)} placeholder="knee, shoulder" />
-            </div>
-            <div>
-              <label className="text-sm text-slate-600">Mobility restrictions (comma-separated)</label>
+            </Field>
+            <Field label="Mobility restrictions" hint="e.g. ankle">
               <Input
                 value={form.mobilityRestrictions}
                 onChange={(e) => set('mobilityRestrictions', e.target.value)}
                 placeholder="ankle"
               />
-            </div>
-            <div>
-              <label className="text-sm text-slate-600">Equipment (comma-separated)</label>
+            </Field>
+            <Field label="Available equipment">
               <Input value={form.equipment} onChange={(e) => set('equipment', e.target.value)} />
-            </div>
+            </Field>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Recovery &amp; lifestyle (1–10)</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <span className={sectionIcon}>
+                <BatteryCharging className="size-[18px]" />
+              </span>
+              Recovery &amp; lifestyle
+            </CardTitle>
+            <CardDescription>Self-reported, scale of 1–10.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-3">
-            {num('Recovery quality', 'recoveryQuality', 1, 10)}
-            {num('Sleep quality', 'sleepQuality', 1, 10)}
-            {num('Stress level', 'stressLevel', 1, 10)}
+            {num('Recovery quality', 'recoveryQuality')}
+            {num('Sleep quality', 'sleepQuality')}
+            {num('Stress level', 'stressLevel')}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Goal</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <span className={sectionIcon}>
+                <Target className="size-[18px]" />
+              </span>
+              Goal
+            </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-3">
             {sel('Goal type', 'goalType', GOAL_TYPES)}
             {sel('Goal sport', 'goalSport', SPORTS)}
-            {num('Timeframe (weeks)', 'timeframeWeeks', 2, 52)}
+            {num('Timeframe (weeks)', 'timeframeWeeks')}
           </CardContent>
         </Card>
 
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
+        {error ? (
+          <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600 ring-1 ring-inset ring-red-100">
+            {error}
+          </p>
+        ) : null}
+
         <div className="flex gap-3">
-          <Button type="submit" disabled={submit.isPending}>
-            {submit.isPending ? 'Saving…' : 'Save assessment & goal'}
+          <Button type="submit" size="lg" disabled={submit.isPending}>
+            {submit.isPending ? <Spinner /> : null} Save assessment &amp; goal
           </Button>
           <Link href={`/coach/clients/${id}`}>
-            <Button type="button" variant="outline">
+            <Button type="button" variant="outline" size="lg">
               Cancel
             </Button>
           </Link>

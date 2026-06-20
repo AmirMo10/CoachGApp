@@ -2,13 +2,55 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #0f172a;
+@layer base {
+  :root {
+    --background: #f6f8fb;
+    --foreground: #0b1220;
+  }
+
+  * {
+    border-color: theme('colors.slate.200');
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+@layer components {
+  /* Frosted dark surface used on marketing + auth screens */
+  .glass {
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+  }
+
+  .eyebrow {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand-700;
+  }
+
+  /* Subtle dotted grid for empty states / hero backdrops */
+  .dot-grid {
+    background-image: radial-gradient(theme('colors.slate.300') 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+}
+
+/* Thin, modern scrollbars */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: theme('colors.slate.300');
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: theme('colors.slate.400');
+  background-clip: content-box;
 }
