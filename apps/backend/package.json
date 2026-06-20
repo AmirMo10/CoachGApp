@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
     "prisma": "prisma",
-    "db:seed": "ts-node prisma/seed.ts"
+    "db:seed": "ts-node prisma/seed.ts",
+    "db:import-exercises": "ts-node prisma/import-exercises.ts"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
