@@ -352,7 +352,7 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
         items={[
           { key: 'bloodwork', label: 'Bloodwork', content: <BloodworkPanel clientId={id} canAdd /> },
           { key: 'messages', label: 'Messages', content: <MessagesPanel clientId={id} role="COACH" /> },
-          { key: 'documents', label: 'Documents', content: <DocumentsPanel clientId={id} /> },
+          { key: 'documents', label: 'Documents', content: <DocumentsPanel clientId={id} canUpload /> },
           { key: 'notes', label: 'Notes', content: <NotesPanel clientId={id} /> },
         ]}
       />
