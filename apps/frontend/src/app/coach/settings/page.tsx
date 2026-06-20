@@ -76,9 +76,9 @@ export default function SettingsPage() {
             <span className="grid size-7 place-items-center rounded-lg bg-brand-50 text-brand-600">
               <Building2 className="size-[18px]" />
             </span>
-            Business profile
+            {t('settings.businessProfile')}
           </CardTitle>
-          <CardDescription>Shown on generated client reports.</CardDescription>
+          <CardDescription>{t('settings.businessProfileDesc')}</CardDescription>
         </CardHeader>
         <CardContent>
           <form
@@ -88,32 +88,32 @@ export default function SettingsPage() {
               save.mutate();
             }}
           >
-            <Field label="Account">
+            <Field label={t('settings.account')}>
               <Input value={profile.data.email} disabled />
             </Field>
-            <Field label="Business name">
+            <Field label={t('settings.businessName')}>
               <Input value={businessName} onChange={(e) => setBusinessName(e.target.value)} placeholder="Apex Performance" />
             </Field>
-            <Field label="Specialties" hint="Comma-separated">
+            <Field label={t('settings.specialties')} hint={t('settings.specialtiesHint')}>
               <Input value={specialties} onChange={(e) => setSpecialties(e.target.value)} placeholder="strength, sport, hypertrophy" />
             </Field>
-            <Field label="Bio">
+            <Field label={t('settings.bio')}>
               <textarea
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 rows={4}
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-ink shadow-soft placeholder:text-slate-400 focus:border-brand-400 focus:outline-none focus:ring-4 focus:ring-brand-500/10"
-                placeholder="Tell clients about your coaching approach…"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-ink shadow-soft placeholder:text-slate-400 focus:border-brand-400 focus:outline-none focus:ring-4 focus:ring-brand-500/10 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                placeholder={t('settings.bioPlaceholder')}
               />
             </Field>
             {error ? (
-              <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600 ring-1 ring-inset ring-red-100">{error}</p>
+              <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600 ring-1 ring-inset ring-red-100 dark:bg-red-500/15 dark:ring-red-500/30">{error}</p>
             ) : null}
             <div className="flex items-center gap-3">
               <Button type="submit" disabled={save.isPending}>
-                {save.isPending ? <Spinner /> : <Save className="size-4" />} Save changes
+                {save.isPending ? <Spinner /> : <Save className="size-4" />} {t('common.save')}
               </Button>
-              {saved ? <span className="text-sm text-brand-600">Saved ✓</span> : null}
+              {saved ? <span className="text-sm text-brand-600">{t('common.saved')} ✓</span> : null}
             </div>
           </form>
         </CardContent>
@@ -125,13 +125,13 @@ export default function SettingsPage() {
             <span className="grid size-7 place-items-center rounded-lg bg-brand-50 text-brand-600">
               <ImageIcon className="size-[18px]" />
             </span>
-            Report logo
+            {t('settings.reportLogo')}
           </CardTitle>
-          <CardDescription>Appears in the header of every PDF report.</CardDescription>
+          <CardDescription>{t('settings.reportLogoDesc')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-5">
-            <div className="grid size-20 place-items-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+            <div className="grid size-20 place-items-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-700">
               {profile.data.logoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={profile.data.logoUrl} alt="Logo" className="size-full object-contain" />
@@ -152,7 +152,7 @@ export default function SettingsPage() {
                 }}
               />
               <p className="mt-1 text-xs text-slate-400">
-                {uploadLogo.isPending ? 'Uploading…' : 'JPG/PNG/WebP'}
+                {uploadLogo.isPending ? t('settings.uploading') : t('settings.fileTypes')}
               </p>
             </div>
           </div>

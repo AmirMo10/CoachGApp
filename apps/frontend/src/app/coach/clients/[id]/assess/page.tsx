@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input, Select, Field } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Spinner } from '@/components/ui/spinner';
+import { useT } from '@/lib/i18n';
 
 const GENDERS = ['MALE', 'FEMALE', 'OTHER'];
 const SPORTS = ['NONE', 'FOOTBALL', 'BASKETBALL', 'VOLLEYBALL', 'COMBAT', 'RUNNING'];
@@ -24,6 +25,7 @@ const toList = (s: string): string[] =>
 
 export default function AssessPage({ params }: { params: { id: string } }) {
   const { id } = params;
+  const { t } = useT();
   const router = useRouter();
   const qc = useQueryClient();
 
@@ -109,12 +111,12 @@ export default function AssessPage({ params }: { params: { id: string } }) {
         href={`/coach/clients/${id}`}
         className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-brand-600"
       >
-        <ArrowLeft className="size-4" /> Back to client
+        <ArrowLeft className="size-4" /> {t('as.backToClient')}
       </Link>
 
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-ink">New assessment &amp; goal</h1>
-        <p className="mt-1 text-slate-500">Capture intake data; a goal is created alongside it.</p>
+        <h1 className="text-2xl font-bold tracking-tight text-ink">{t('as.title')}</h1>
+        <p className="mt-1 text-slate-500">{t('as.subtitle')}</p>
       </div>
 
       <form
@@ -131,18 +133,18 @@ export default function AssessPage({ params }: { params: { id: string } }) {
               <span className={sectionIcon}>
                 <User className="size-[18px]" />
               </span>
-              Athlete profile
+              {t('as.athleteProfile')}
             </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-3">
-            {num('Age', 'age')}
-            {sel('Gender', 'gender', GENDERS)}
-            {sel('Experience', 'experience', EXPERIENCE)}
-            {num('Height (cm)', 'heightCm')}
-            {num('Weight (kg)', 'weightKg')}
-            {num('Body fat %', 'bodyFatPct', 'optional')}
-            {sel('Sport', 'sport', SPORTS)}
-            {num('Training days / week', 'trainingFrequency')}
+            {num(t('as.age'), 'age')}
+            {sel(t('as.gender'), 'gender', GENDERS)}
+            {sel(t('as.experience'), 'experience', EXPERIENCE)}
+            {num(t('as.heightCm'), 'heightCm')}
+            {num(t('as.weightKg'), 'weightKg')}
+            {num(t('as.bodyFat'), 'bodyFatPct', t('common.optional'))}
+            {sel(t('as.sport'), 'sport', SPORTS)}
+            {num(t('as.trainingDays'), 'trainingFrequency')}
           </CardContent>
         </Card>
 
@@ -152,22 +154,22 @@ export default function AssessPage({ params }: { params: { id: string } }) {
               <span className={sectionIcon}>
                 <ShieldAlert className="size-[18px]" />
               </span>
-              Constraints &amp; equipment
+              {t('as.constraints')}
             </CardTitle>
-            <CardDescription>Comma-separated. These drive the rule engine&apos;s safety filtering.</CardDescription>
+            <CardDescription>{t('as.constraintsDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Field label="Injuries" hint="e.g. knee, shoulder">
+            <Field label={t('as.injuries')} hint="e.g. knee, shoulder">
               <Input value={form.injuries} onChange={(e) => set('injuries', e.target.value)} placeholder="knee, shoulder" />
             </Field>
-            <Field label="Mobility restrictions" hint="e.g. ankle">
+            <Field label={t('as.mobility')} hint="e.g. ankle">
               <Input
                 value={form.mobilityRestrictions}
                 onChange={(e) => set('mobilityRestrictions', e.target.value)}
                 placeholder="ankle"
               />
             </Field>
-            <Field label="Available equipment">
+            <Field label={t('as.equipment')}>
               <Input value={form.equipment} onChange={(e) => set('equipment', e.target.value)} />
             </Field>
           </CardContent>
@@ -179,14 +181,14 @@ export default function AssessPage({ params }: { params: { id: string } }) {
               <span className={sectionIcon}>
                 <BatteryCharging className="size-[18px]" />
               </span>
-              Recovery &amp; lifestyle
+              {t('as.recoveryLifestyle')}
             </CardTitle>
-            <CardDescription>Self-reported, scale of 1–10.</CardDescription>
+            <CardDescription>{t('as.recoveryDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-3">
-            {num('Recovery quality', 'recoveryQuality')}
-            {num('Sleep quality', 'sleepQuality')}
-            {num('Stress level', 'stressLevel')}
+            {num(t('as.recoveryQuality'), 'recoveryQuality')}
+            {num(t('as.sleepQuality'), 'sleepQuality')}
+            {num(t('as.stressLevel'), 'stressLevel')}
           </CardContent>
         </Card>
 
@@ -196,29 +198,29 @@ export default function AssessPage({ params }: { params: { id: string } }) {
               <span className={sectionIcon}>
                 <Target className="size-[18px]" />
               </span>
-              Goal
+              {t('as.goal')}
             </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-3">
-            {sel('Goal type', 'goalType', GOAL_TYPES)}
-            {sel('Goal sport', 'goalSport', SPORTS)}
-            {num('Timeframe (weeks)', 'timeframeWeeks')}
+            {sel(t('as.goalType'), 'goalType', GOAL_TYPES)}
+            {sel(t('as.goalSport'), 'goalSport', SPORTS)}
+            {num(t('as.timeframe'), 'timeframeWeeks')}
           </CardContent>
         </Card>
 
         {error ? (
-          <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600 ring-1 ring-inset ring-red-100">
+          <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600 ring-1 ring-inset ring-red-100 dark:bg-red-500/15 dark:ring-red-500/30">
             {error}
           </p>
         ) : null}
 
         <div className="flex gap-3">
           <Button type="submit" size="lg" disabled={submit.isPending}>
-            {submit.isPending ? <Spinner /> : null} Save assessment &amp; goal
+            {submit.isPending ? <Spinner /> : null} {t('as.saveBtn')}
           </Button>
           <Link href={`/coach/clients/${id}`}>
             <Button type="button" variant="outline" size="lg">
-              Cancel
+              {t('common.cancel')}
             </Button>
           </Link>
         </div>

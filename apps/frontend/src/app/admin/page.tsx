@@ -52,20 +52,20 @@ export default function AdminDashboard() {
           {coaches.isLoading ? (
             <PageLoader />
           ) : !coaches.data?.length ? (
-            <p className="px-5 py-6 text-slate-500">No coaches yet.</p>
+            <p className="px-5 py-6 text-slate-500">{t('admin.noCoaches')}</p>
           ) : (
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100 text-left text-xs uppercase tracking-wide text-slate-400">
-                  <th className="px-5 py-2 font-medium">Coach</th>
-                  <th className="px-5 py-2 font-medium">Business</th>
-                  <th className="px-5 py-2 text-center font-medium">Clients</th>
-                  <th className="px-5 py-2 text-center font-medium">Status</th>
+                  <th className="px-5 py-2 font-medium">{t('admin.coach')}</th>
+                  <th className="px-5 py-2 font-medium">{t('admin.business')}</th>
+                  <th className="px-5 py-2 text-center font-medium">{t('admin.clients')}</th>
+                  <th className="px-5 py-2 text-center font-medium">{t('admin.status')}</th>
                 </tr>
               </thead>
               <tbody>
                 {coaches.data.map((c) => (
-                  <tr key={c.id} className="border-b border-slate-50">
+                  <tr key={c.id} className="border-b border-slate-50 dark:border-slate-800">
                     <td className="px-5 py-3">
                       <div className="font-medium text-ink">{c.name || '—'}</div>
                       <div className="text-xs text-slate-400">{c.email}</div>
@@ -73,7 +73,7 @@ export default function AdminDashboard() {
                     <td className="px-5 py-3 text-slate-600">{c.businessName ?? '—'}</td>
                     <td className="px-5 py-3 text-center text-slate-600">{c.clientCount}</td>
                     <td className="px-5 py-3 text-center">
-                      <Badge tone={c.isActive ? 'success' : 'default'}>{c.isActive ? 'Active' : 'Inactive'}</Badge>
+                      <Badge tone={c.isActive ? 'success' : 'default'}>{c.isActive ? t('admin.active') : t('admin.inactive')}</Badge>
                     </td>
                   </tr>
                 ))}

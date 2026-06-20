@@ -24,9 +24,11 @@ import { LineChart } from '@/components/ui/line-chart';
 import { LineChart as LineIcon } from 'lucide-react';
 import { Tabs } from '@/components/ui/tabs';
 import { BloodworkPanel, MessagesPanel, DocumentsPanel, NotesPanel } from '@/components/panels';
+import { useT } from '@/lib/i18n';
 
 export default function ClientDetailPage({ params }: { params: { id: string } }) {
   const { id } = params;
+  const { t } = useT();
   const qc = useQueryClient();
 
   const client = useQuery({ queryKey: ['client', id], queryFn: () => Api.client(id) });
@@ -89,7 +91,7 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
   return (
     <div className="space-y-6">
       <Link href="/coach" className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-brand-600">
-        <ArrowLeft className="size-4" /> Clients
+        <ArrowLeft className="size-4" /> {t('cd.backToClients')}
       </Link>
 
       {/* Header */}
@@ -103,25 +105,25 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
             <div className="mt-1 flex flex-wrap items-center gap-2">
               {a ? <Badge tone="info">{a.sport}</Badge> : null}
               {hasGoal ? <Badge tone="success">{goals.data![0]!.type}</Badge> : null}
-              {!a ? <Badge tone="warn">Needs assessment</Badge> : null}
+              {!a ? <Badge tone="warn">{t('cd.needsAssessment')}</Badge> : null}
             </div>
           </div>
         </div>
         <div className="flex gap-3">
           <Link href={`/coach/clients/${id}/assess`}>
             <Button variant="outline">
-              <ClipboardList className="size-4" /> New assessment
+              <ClipboardList className="size-4" /> {t('cd.newAssessment')}
             </Button>
           </Link>
           <Button onClick={() => genReport.mutate()} disabled={genReport.isPending}>
-            {genReport.isPending ? <Spinner /> : <FileText className="size-4" />} PDF report
+            {genReport.isPending ? <Spinner /> : <FileText className="size-4" />} {t('cd.pdfReport')}
           </Button>
         </div>
       </div>
 
       {genReport.data ? (
         <div className="flex items-center gap-2 rounded-xl bg-brand-50 px-4 py-3 text-sm text-brand-700 ring-1 ring-inset ring-brand-200">
-          <CheckCircle2 className="size-4" /> Report queued — status {genReport.data.status} (id{' '}
+          <CheckCircle2 className="size-4" /> {t('cd.reportQueued')} — status {genReport.data.status} (id{' '}
           {genReport.data.reportId.slice(0, 8)}…)
         </div>
       ) : null}
@@ -134,26 +136,26 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
       {/* Assessment */}
       <Card>
         <CardHeader action={a ? <Badge>v{a.version}</Badge> : null}>
-          <CardTitle>Latest assessment</CardTitle>
+          <CardTitle>{t('cd.latestAssessment')}</CardTitle>
         </CardHeader>
         <CardContent>
           {!a ? (
             <div className="rounded-xl border border-dashed border-amber-300 bg-amber-50/50 p-4 text-sm text-amber-800">
-              No assessment yet.{' '}
+              {t('cd.noAssessment')}{' '}
               <Link href={`/coach/clients/${id}/assess`} className="font-medium underline">
-                Add one
+                {t('cd.addOne')}
               </Link>{' '}
-              to enable plan generation.
+              {t('cd.toEnable')}
             </div>
           ) : (
             <dl className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
               {[
-                ['Age', a.age],
-                ['Height', `${a.heightCm} cm`],
-                ['Weight', `${a.weightKg} kg`],
-                ['Experience', a.experience],
-                ['Sport', a.sport],
-                ['Training days/wk', a.trainingFrequency],
+                [t('cd.age'), a.age],
+                [t('cd.height'), `${a.heightCm} cm`],
+                [t('cd.weight'), `${a.weightKg} kg`],
+                [t('cd.experience'), a.experience],
+                [t('cd.sport'), a.sport],
+                [t('cd.daysWk'), a.trainingFrequency],
               ].map(([k, v]) => (
                 <div key={k as string}>
                   <dt className="text-xs font-medium uppercase tracking-wide text-slate-400">{k}</dt>
@@ -169,22 +171,22 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Sparkles className="size-4 text-brand-500" /> Generate plans
+            <Sparkles className="size-4 text-brand-500" /> {t('cd.generatePlans')}
           </CardTitle>
-          <CardDescription>Deterministic engines build the plan; AI adds the rationale.</CardDescription>
+          <CardDescription>{t('cd.generateDesc')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
           {!hasGoal ? (
             <div className="rounded-xl border border-dashed border-amber-300 bg-amber-50/50 p-4 text-sm text-amber-800">
-              A goal and assessment are required.{' '}
+              {t('cd.needGoal')}{' '}
               <Link href={`/coach/clients/${id}/assess`} className="font-medium underline">
-                Run intake
+                {t('cd.runIntake')}
               </Link>{' '}
-              first.
+              {t('cd.first')}
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-4">
-              <Field label="Goal">
+              <Field label={t('cd.goal')}>
                 <Select value={effectiveGoalId} onChange={(e) => setGoalId(e.target.value)}>
                   {goals.data!.map((g) => (
                     <option key={g.id} value={g.id}>
@@ -193,25 +195,25 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
                   ))}
                 </Select>
               </Field>
-              <Field label="Periodization">
+              <Field label={t('cd.periodization')}>
                 <Select value={periodization} onChange={(e) => setPeriodization(e.target.value)}>
                   <option value="LINEAR">Linear</option>
                   <option value="BLOCK">Block</option>
                   <option value="UNDULATING">Undulating</option>
                 </Select>
               </Field>
-              <Field label="Weeks">
+              <Field label={t('cd.weeks')}>
                 <Select value={String(durationWeeks)} onChange={(e) => setDurationWeeks(Number(e.target.value))}>
-                  <option value="4">4 weeks</option>
-                  <option value="8">8 weeks</option>
-                  <option value="12">12 weeks</option>
+                  <option value="4">4 {t('cd.weeks')}</option>
+                  <option value="8">8 {t('cd.weeks')}</option>
+                  <option value="12">12 {t('cd.weeks')}</option>
                 </Select>
               </Field>
-              <Field label="Days / week">
+              <Field label={t('cd.daysWeek')}>
                 <Select value={String(daysPerWeek)} onChange={(e) => setDaysPerWeek(Number(e.target.value))}>
                   {[2, 3, 4, 5, 6].map((d) => (
                     <option key={d} value={d}>
-                      {d} days
+                      {d}
                     </option>
                   ))}
                 </Select>
@@ -220,17 +222,17 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
           )}
           <div className="flex flex-wrap gap-3">
             <Button onClick={() => genProgram.mutate()} disabled={!effectiveGoalId || genProgram.isPending}>
-              {genProgram.isPending ? <Spinner /> : <Dumbbell className="size-4" />} Program
+              {genProgram.isPending ? <Spinner /> : <Dumbbell className="size-4" />} {t('cd.program')}
             </Button>
             <Button
               variant="outline"
               onClick={() => genNutrition.mutate()}
               disabled={!effectiveGoalId || genNutrition.isPending}
             >
-              {genNutrition.isPending ? <Spinner /> : <Salad className="size-4" />} Nutrition
+              {genNutrition.isPending ? <Spinner /> : <Salad className="size-4" />} {t('cd.nutrition')}
             </Button>
             <Button variant="outline" onClick={() => genRecovery.mutate()} disabled={genRecovery.isPending}>
-              {genRecovery.isPending ? <Spinner /> : <HeartPulse className="size-4" />} Recovery
+              {genRecovery.isPending ? <Spinner /> : <HeartPulse className="size-4" />} {t('cd.recovery')}
             </Button>
           </div>
         </CardContent>
@@ -238,7 +240,7 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
 
       {/* Plan results */}
       <div className="grid gap-5 lg:grid-cols-3">
-        <PlanCard icon={<Dumbbell className="size-[18px]" />} title="Programs" tone="brand" empty={!programs.data?.length}>
+        <PlanCard icon={<Dumbbell className="size-[18px]" />} title={t('cd.programs')} tone="brand" empty={!programs.data?.length}>
           {programs.data?.map((p) => (
             <Link
               key={p.id}
@@ -250,13 +252,13 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
                 <Badge tone={p.status === 'ACTIVE' ? 'success' : 'default'}>{p.status}</Badge>
               </div>
               <p className="mt-1 text-sm text-slate-500">
-                {p.durationWeeks} weeks · {p.daysPerWeek} days/week · view →
+                {p.durationWeeks} {t('cd.weeks')} · {p.daysPerWeek} {t('cd.daysWeek')} · {t('common.view')} →
               </p>
             </Link>
           ))}
         </PlanCard>
 
-        <PlanCard icon={<Salad className="size-[18px]" />} title="Nutrition" tone="sky" empty={!nutrition.data?.length}>
+        <PlanCard icon={<Salad className="size-[18px]" />} title={t('cd.nutrition')} tone="sky" empty={!nutrition.data?.length}>
           {nutrition.data?.map((n) => (
             <div key={n.id} className="rounded-xl border border-slate-100 bg-slate-50/60 p-3">
               <div className="flex items-center justify-between">
@@ -272,12 +274,12 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
           ))}
         </PlanCard>
 
-        <PlanCard icon={<HeartPulse className="size-[18px]" />} title="Recovery" tone="amber" empty={!recovery.data?.length}>
+        <PlanCard icon={<HeartPulse className="size-[18px]" />} title={t('cd.recovery')} tone="amber" empty={!recovery.data?.length}>
           {recovery.data?.map((r) => (
             <div key={r.id} className="rounded-xl border border-slate-100 bg-slate-50/60 p-3">
               <div className="flex items-center justify-between">
                 <span className="font-medium text-ink">Score {r.recoveryScore}/100</span>
-                {r.deloadRecommended ? <Badge tone="warn">Deload</Badge> : <Badge tone="success">On track</Badge>}
+                {r.deloadRecommended ? <Badge tone="warn">{t('common.deload')}</Badge> : <Badge tone="success">{t('common.onTrack')}</Badge>}
               </div>
               <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
                 <div className="h-full rounded-full bg-brand-gradient" style={{ width: `${r.recoveryScore}%` }} />
@@ -302,7 +304,7 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
               }}
             >
               <div className="w-24">
-                <Field label="Weight kg">
+                <Field label={t('common.weight')}>
                   <Input
                     type="number"
                     step="0.1"
@@ -313,7 +315,7 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
                 </Field>
               </div>
               <div className="w-20">
-                <Field label="Body %">
+                <Field label={t('common.bodyFat')}>
                   <Input
                     type="number"
                     step="0.1"
@@ -324,7 +326,7 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
                 </Field>
               </div>
               <Button type="submit" size="sm" disabled={(!weight && !bodyFat) || logProgress.isPending}>
-                {logProgress.isPending ? <Spinner /> : 'Log'}
+                {logProgress.isPending ? <Spinner /> : t('common.log')}
               </Button>
             </form>
           }
@@ -333,9 +335,9 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
             <span className="grid size-7 place-items-center rounded-lg bg-brand-50 text-brand-600">
               <LineIcon className="size-[18px]" />
             </span>
-            Progress
+            {t('cd.progress')}
           </CardTitle>
-          <CardDescription>Bodyweight trend over logged entries.</CardDescription>
+          <CardDescription>{t('cd.progressDesc')}</CardDescription>
         </CardHeader>
         <CardContent>
           <LineChart
@@ -350,10 +352,10 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
       {/* Bloodwork / Messages / Documents / Notes */}
       <Tabs
         items={[
-          { key: 'bloodwork', label: 'Bloodwork', content: <BloodworkPanel clientId={id} canAdd /> },
-          { key: 'messages', label: 'Messages', content: <MessagesPanel clientId={id} role="COACH" /> },
-          { key: 'documents', label: 'Documents', content: <DocumentsPanel clientId={id} canUpload /> },
-          { key: 'notes', label: 'Notes', content: <NotesPanel clientId={id} /> },
+          { key: 'bloodwork', label: t('tabs.bloodwork'), content: <BloodworkPanel clientId={id} canAdd /> },
+          { key: 'messages', label: t('tabs.messages'), content: <MessagesPanel clientId={id} role="COACH" /> },
+          { key: 'documents', label: t('tabs.documents'), content: <DocumentsPanel clientId={id} canUpload /> },
+          { key: 'notes', label: t('tabs.notes'), content: <NotesPanel clientId={id} /> },
         ]}
       />
     </div>
@@ -362,7 +364,7 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
 
 function Macro({ label, value }: { label: string; value: number }) {
   return (
-    <span className="rounded-md bg-white px-2 py-1 font-medium text-slate-600 ring-1 ring-inset ring-slate-200">
+    <span className="rounded-md bg-white px-2 py-1 font-medium text-slate-600 ring-1 ring-inset ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700">
       {label} {value}g
     </span>
   );
@@ -381,7 +383,12 @@ function PlanCard({
   empty: boolean;
   children: React.ReactNode;
 }) {
-  const chip = { brand: 'bg-brand-50 text-brand-600', sky: 'bg-sky-50 text-sky-600', amber: 'bg-amber-50 text-amber-600' }[tone];
+  const { t } = useT();
+  const chip = {
+    brand: 'bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-400',
+    sky: 'bg-sky-50 text-sky-600 dark:bg-sky-500/15 dark:text-sky-400',
+    amber: 'bg-amber-50 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400',
+  }[tone];
   return (
     <Card>
       <CardHeader>
@@ -391,7 +398,7 @@ function PlanCard({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
-        {empty ? <p className="py-2 text-sm text-slate-400">None yet — generate above.</p> : children}
+        {empty ? <p className="py-2 text-sm text-slate-400">{t('cd.noneGenerate')}</p> : children}
       </CardContent>
     </Card>
   );
