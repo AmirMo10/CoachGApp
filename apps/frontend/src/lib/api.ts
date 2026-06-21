@@ -268,7 +268,14 @@ export const Api = {
   workouts: (clientId: string) => api<WorkoutLog[]>(`/clients/${clientId}/workouts`),
   logWorkout: (
     clientId: string,
-    body: { programId?: string; weekIndex?: number; dayIndex?: number; focus?: string; notes?: string },
+    body: {
+      programId?: string;
+      weekIndex?: number;
+      dayIndex?: number;
+      focus?: string;
+      notes?: string;
+      entries?: LoggedExercise[];
+    },
   ) => api<WorkoutLog>(`/clients/${clientId}/workouts`, { method: 'POST', body: JSON.stringify(body) }),
 
   // Coach profile / settings
@@ -293,6 +300,16 @@ export const Api = {
     >('/admin/coaches'),
 };
 
+export interface LoggedSet {
+  reps?: number;
+  weightKg?: number;
+  rpe?: number;
+}
+export interface LoggedExercise {
+  name: string;
+  sets: LoggedSet[];
+}
+
 export interface WorkoutLog {
   id: string;
   programId?: string | null;
@@ -301,6 +318,7 @@ export interface WorkoutLog {
   focus?: string | null;
   performedAt: string;
   notes?: string | null;
+  entries?: LoggedExercise[] | null;
 }
 
 export interface CoachProfile {

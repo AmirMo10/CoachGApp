@@ -4,10 +4,11 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { ArrowLeft, ChevronDown, Sparkles, Flame, Activity, CheckCircle2 } from 'lucide-react';
-import { Api, ProgramWeekFull } from '@/lib/api';
+import { Api, LoggedExercise, LoggedSet, ProgramDayFull, ProgramWeekFull } from '@/lib/api';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { PageLoader, Spinner } from '@/components/ui/spinner';
 import { useT } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
@@ -15,7 +16,7 @@ import { cn } from '@/lib/utils';
 interface LogState {
   loggedKeys: Set<string>;
   pendingKey: string | null;
-  onLog: (weekIndex: number, dayIndex: number, focus: string) => void;
+  onLog: (weekIndex: number, dayIndex: number, focus: string, entries: LoggedExercise[]) => void;
 }
 
 const phaseTone: Record<string, 'success' | 'info' | 'warn' | 'default'> = {
@@ -28,7 +29,7 @@ const phaseTone: Record<string, 'success' | 'info' | 'warn' | 'default'> = {
 /**
  * Shared week-by-week program viewer used by both coach and client portals.
  * When `clientId` is provided (client portal), each day shows a "Log session"
- * button that records a completed workout.
+ * form that records the actual reps/load performed per exercise.
  */
 export function ProgramView({
   programId,
@@ -46,7 +47,7 @@ export function ProgramView({
   const [pendingKey, setPendingKey] = useState<string | null>(null);
 
   const logWorkout = useMutation({
-    mutationFn: (v: { weekIndex: number; dayIndex: number; focus: string }) => {
+    mutationFn: (v: { weekIndex: number; dayIndex: number; focus: string; entries: LoggedExercise[] }) => {
       setPendingKey(`${v.weekIndex}-${v.dayIndex}`);
       return Api.logWorkout(clientId!, { programId, ...v });
     },
@@ -61,7 +62,8 @@ export function ProgramView({
     ? {
         loggedKeys,
         pendingKey,
-        onLog: (weekIndex, dayIndex, focus) => logWorkout.mutate({ weekIndex, dayIndex, focus }),
+        onLog: (weekIndex, dayIndex, focus, entries) =>
+          logWorkout.mutate({ weekIndex, dayIndex, focus, entries }),
       }
     : undefined;
 
@@ -201,35 +203,116 @@ function WeekRow({
                   {t('pv.conditioning')}: {day.payload.conditioning.join(' · ')}
                 </p>
               ) : null}
-              {log ? (
-                (() => {
-                  const key = `${week.weekIndex}-${day.dayIndex}`;
-                  const done = log.loggedKeys.has(key);
-                  return (
-                    <Button
-                      variant={done ? 'subtle' : 'outline'}
-                      size="sm"
-                      className="mt-3 w-full"
-                      disabled={done || log.pendingKey === key}
-                      onClick={() => log.onLog(week.weekIndex, day.dayIndex, day.focus)}
-                    >
-                      {log.pendingKey === key ? (
-                        <Spinner />
-                      ) : done ? (
-                        <>
-                          <CheckCircle2 className="size-4" /> {t('pv.logged')}
-                        </>
-                      ) : (
-                        t('pv.logSession')
-                      )}
-                    </Button>
-                  );
-                })()
-              ) : null}
+              {log ? <DayLogger week={week} day={day} log={log} /> : null}
             </div>
           ))}
         </div>
       ) : null}
     </Card>
+  );
+}
+
+/**
+ * Per-day session logger: clients record the actual reps/load/RPE they performed
+ * for each exercise. Rows are pre-seeded from the planned set count.
+ */
+function DayLogger({ week, day, log }: { week: ProgramWeekFull; day: ProgramDayFull; log: LogState }) {
+  const { t } = useT();
+  const key = `${week.weekIndex}-${day.dayIndex}`;
+  const done = log.loggedKeys.has(key);
+  const pending = log.pendingKey === key;
+  const [open, setOpen] = useState(false);
+  const [entries, setEntries] = useState<LoggedExercise[]>(() =>
+    day.exercises.map((ex) => ({
+      name: ex.exercise.name,
+      sets: Array.from({ length: Math.max(1, ex.sets) }, () => ({}) as LoggedSet),
+    })),
+  );
+
+  const update = (ei: number, si: number, field: keyof LoggedSet, value: string) => {
+    setEntries((prev) =>
+      prev.map((e, i) =>
+        i !== ei
+          ? e
+          : {
+              ...e,
+              sets: e.sets.map((s, j) =>
+                j !== si ? s : { ...s, [field]: value === '' ? undefined : Number(value) },
+              ),
+            },
+      ),
+    );
+  };
+
+  if (done) {
+    return (
+      <Button variant="subtle" size="sm" className="mt-3 w-full" disabled>
+        <CheckCircle2 className="size-4" /> {t('pv.logged')}
+      </Button>
+    );
+  }
+
+  if (!open) {
+    return (
+      <Button variant="outline" size="sm" className="mt-3 w-full" onClick={() => setOpen(true)}>
+        {t('pv.logSession')}
+      </Button>
+    );
+  }
+
+  return (
+    <div className="mt-3 space-y-3 rounded-xl border border-slate-200 bg-slate-50/60 p-3 dark:border-slate-800 dark:bg-slate-900/40">
+      {entries.map((ex, ei) => (
+        <div key={ei}>
+          <p className="text-xs font-semibold text-ink">{ex.name}</p>
+          <div className="mt-1.5 space-y-1.5">
+            {ex.sets.map((s, si) => (
+              <div key={si} className="flex items-center gap-2">
+                <span className="w-12 shrink-0 text-[11px] text-slate-400">
+                  {t('pv.set')} {si + 1}
+                </span>
+                <Input
+                  type="number"
+                  inputMode="numeric"
+                  placeholder={t('pv.reps')}
+                  value={s.reps ?? ''}
+                  onChange={(e) => update(ei, si, 'reps', e.target.value)}
+                  className="h-8 text-sm"
+                />
+                <Input
+                  type="number"
+                  inputMode="decimal"
+                  placeholder="kg"
+                  value={s.weightKg ?? ''}
+                  onChange={(e) => update(ei, si, 'weightKg', e.target.value)}
+                  className="h-8 text-sm"
+                />
+                <Input
+                  type="number"
+                  inputMode="decimal"
+                  placeholder="RPE"
+                  value={s.rpe ?? ''}
+                  onChange={(e) => update(ei, si, 'rpe', e.target.value)}
+                  className="h-8 text-sm"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+      <div className="flex gap-2">
+        <Button
+          size="sm"
+          className="flex-1"
+          disabled={pending}
+          onClick={() => log.onLog(week.weekIndex, day.dayIndex, day.focus, entries)}
+        >
+          {pending ? <Spinner /> : t('pv.saveSession')}
+        </Button>
+        <Button size="sm" variant="ghost" onClick={() => setOpen(false)} disabled={pending}>
+          {t('common.cancel')}
+        </Button>
+      </div>
+    </div>
   );
 }

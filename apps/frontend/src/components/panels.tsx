@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Send, Sparkles, FileText, Plus, FlaskConical } from 'lucide-react';
+import { Send, Sparkles, FileText, Plus, FlaskConical, Dumbbell } from 'lucide-react';
 import { Api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input, Select, Field } from '@/components/ui/input';
@@ -221,6 +221,64 @@ export function NotesPanel({ clientId }: { clientId: string }) {
         )}
       </CardContent>
     </Card>
+  );
+}
+
+// ── Workout sessions (coach read-only history) ──
+export function WorkoutsPanel({ clientId }: { clientId: string }) {
+  const { t } = useT();
+  const sessions = useQuery({ queryKey: ['workouts', clientId], queryFn: () => Api.workouts(clientId) });
+
+  if (sessions.isLoading) return <PageLoader />;
+  if (!sessions.data?.length)
+    return <p className="py-6 text-center text-sm text-slate-400">{t('client.noSessions')}</p>;
+
+  return (
+    <div className="space-y-3">
+      {sessions.data.map((w) => (
+        <Card key={w.id}>
+          <CardContent className="pt-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Dumbbell className="size-4 text-brand-600" />
+                <span className="font-medium text-ink">{w.focus ?? '—'}</span>
+                {w.weekIndex != null && w.dayIndex != null ? (
+                  <Badge>
+                    {t('pv.week')} {w.weekIndex} · {t('pv.day')} {w.dayIndex}
+                  </Badge>
+                ) : null}
+              </div>
+              <span className="text-sm text-slate-500">{new Date(w.performedAt).toLocaleDateString()}</span>
+            </div>
+            {w.entries?.length ? (
+              <div className="mt-3 space-y-2">
+                {w.entries.map((ex, i) => (
+                  <div
+                    key={i}
+                    className="rounded-xl border border-slate-100 bg-slate-50/60 p-3 dark:border-slate-800 dark:bg-slate-900/40"
+                  >
+                    <p className="text-sm font-medium text-ink">{ex.name}</p>
+                    <div className="mt-1.5 flex flex-wrap gap-1.5">
+                      {ex.sets.map((s, j) => (
+                        <span
+                          key={j}
+                          className="rounded-md bg-white px-2 py-1 text-xs text-slate-600 ring-1 ring-inset ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700"
+                        >
+                          {t('pv.set')} {j + 1}: {s.reps ?? '—'}
+                          {s.weightKg != null ? ` × ${s.weightKg}kg` : ''}
+                          {s.rpe != null ? ` @${s.rpe}` : ''}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+            {w.notes ? <p className="mt-3 text-sm text-slate-500">{w.notes}</p> : null}
+          </CardContent>
+        </Card>
+      ))}
+    </div>
   );
 }
 

@@ -24,7 +24,7 @@ export class WorkoutsService {
         focus: dto.focus,
         performedAt: dto.performedAt ? new Date(dto.performedAt) : new Date(),
         notes: dto.notes,
-        entries: (dto.entries as Prisma.InputJsonValue) ?? undefined,
+        entries: dto.entries ? (dto.entries as unknown as Prisma.InputJsonValue) : undefined,
       },
     });
   }

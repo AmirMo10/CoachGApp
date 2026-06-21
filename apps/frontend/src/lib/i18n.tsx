@@ -121,6 +121,7 @@ const en: Dict = {
   'tabs.bloodwork': 'Bloodwork',
   'tabs.documents': 'Documents',
   'tabs.notes': 'Notes',
+  'tabs.sessions': 'Sessions',
   // admin
   'admin.platform': 'Platform',
   'admin.title': 'Admin overview',
@@ -220,6 +221,8 @@ const en: Dict = {
   'pv.notFound': 'Program not found.',
   'pv.logSession': 'Log session',
   'pv.logged': 'Logged ✓',
+  'pv.saveSession': 'Save session',
+  'pv.set': 'Set',
   'client.recentSessions': 'Recent sessions',
   'client.noSessions': 'No sessions logged yet.',
 };
@@ -328,6 +331,7 @@ const fa: Dict = {
   'tabs.bloodwork': 'آزمایش خون',
   'tabs.documents': 'اسناد',
   'tabs.notes': 'یادداشت‌ها',
+  'tabs.sessions': 'جلسات',
   'admin.platform': 'پلتفرم',
   'admin.title': 'نمای کلی مدیر',
   'admin.subtitle': 'معیارهای کل سیستم و مدیریت مربیان.',
@@ -422,6 +426,8 @@ const fa: Dict = {
   'pv.notFound': 'برنامه یافت نشد.',
   'pv.logSession': 'ثبت جلسه',
   'pv.logged': 'ثبت شد ✓',
+  'pv.saveSession': 'ذخیره جلسه',
+  'pv.set': 'ست',
   'client.recentSessions': 'جلسات اخیر',
   'client.noSessions': 'هنوز جلسه‌ای ثبت نشده.',
 };
