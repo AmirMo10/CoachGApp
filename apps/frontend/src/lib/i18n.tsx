@@ -218,6 +218,10 @@ const en: Dict = {
   'pv.conditioning': 'Conditioning',
   'pv.rationale': 'Coaching rationale',
   'pv.notFound': 'Program not found.',
+  'pv.logSession': 'Log session',
+  'pv.logged': 'Logged ✓',
+  'client.recentSessions': 'Recent sessions',
+  'client.noSessions': 'No sessions logged yet.',
 };
 
 const fa: Dict = {
@@ -416,6 +420,10 @@ const fa: Dict = {
   'pv.conditioning': 'آمادگی',
   'pv.rationale': 'دلیل مربیگری',
   'pv.notFound': 'برنامه یافت نشد.',
+  'pv.logSession': 'ثبت جلسه',
+  'pv.logged': 'ثبت شد ✓',
+  'client.recentSessions': 'جلسات اخیر',
+  'client.noSessions': 'هنوز جلسه‌ای ثبت نشده.',
 };
 
 const DICTS: Record<Locale, Dict> = { en, fa };

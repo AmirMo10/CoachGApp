@@ -178,6 +178,7 @@ model ClientProfile {
   reports      Report[]
   messages     Message[]
   notes        CoachNote[]
+  workoutLogs  WorkoutLog[]
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
   deletedAt    DateTime?
@@ -491,6 +492,24 @@ model CoachNote {
   createdAt DateTime      @default(now())
 
   @@index([clientId])
+}
+
+// Client-logged completed training session (Module 11 — workout logging).
+model WorkoutLog {
+  id          String        @id @default(cuid())
+  client      ClientProfile @relation(fields: [clientId], references: [id])
+  clientId    String
+  programId   String?
+  weekIndex   Int?
+  dayIndex    Int?
+  focus       String?
+  performedAt DateTime      @default(now())
+  notes       String?
+  // Optional per-exercise performance: [{name, sets, reps, loadKg, done}]
+  entries     Json?
+  createdAt   DateTime      @default(now())
+
+  @@index([clientId, performedAt])
 }
 
 // ──────────────────────────────────────────────

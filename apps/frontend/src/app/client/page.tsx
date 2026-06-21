@@ -27,6 +27,7 @@ export default function ClientDashboard() {
   const nutrition = useQuery({ queryKey: ['nutrition', id], queryFn: () => Api.nutrition(id), enabled: !!id });
   const recovery = useQuery({ queryKey: ['recovery', id], queryFn: () => Api.recovery(id), enabled: !!id });
   const progress = useQuery({ queryKey: ['progress', id], queryFn: () => Api.progress(id), enabled: !!id });
+  const workouts = useQuery({ queryKey: ['workouts', id], queryFn: () => Api.workouts(id), enabled: !!id });
 
   const [weight, setWeight] = useState('');
   const log = useMutation({
@@ -133,6 +134,32 @@ export default function ClientDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('client.recentSessions')}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {!workouts.data?.length ? (
+            <p className="text-sm text-slate-400">{t('client.noSessions')}</p>
+          ) : (
+            workouts.data.slice(0, 8).map((w) => (
+              <div
+                key={w.id}
+                className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50/60 p-3 dark:border-slate-800 dark:bg-slate-900/40"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-ink">{w.focus ?? '—'}</span>
+                  {w.weekIndex != null && w.dayIndex != null ? (
+                    <Badge>{t('pv.week')} {w.weekIndex} · {t('pv.day')} {w.dayIndex}</Badge>
+                  ) : null}
+                </div>
+                <span className="text-sm text-slate-500">{w.performedAt.slice(0, 10)}</span>
+              </div>
+            ))
+          )}
+        </CardContent>
+      </Card>
 
       <Tabs
         items={[

@@ -25,6 +25,7 @@ import { ReportsModule } from './reports/reports.module';
 import { EngagementModule } from './engagement/engagement.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { CoachProfileModule } from './coach-profile/coach-profile.module';
+import { WorkoutsModule } from './workouts/workouts.module';
 import { HealthModule } from './health/health.module';
 
 @Module({
@@ -61,6 +62,7 @@ import { HealthModule } from './health/health.module';
     EngagementModule,
     AnalyticsModule,
     CoachProfileModule,
+    WorkoutsModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
