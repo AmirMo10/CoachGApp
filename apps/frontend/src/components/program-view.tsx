@@ -2,14 +2,21 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, ChevronDown, Sparkles, Flame, Activity } from 'lucide-react';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { ArrowLeft, ChevronDown, Sparkles, Flame, Activity, CheckCircle2 } from 'lucide-react';
 import { Api, ProgramWeekFull } from '@/lib/api';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { PageLoader } from '@/components/ui/spinner';
+import { PageLoader, Spinner } from '@/components/ui/spinner';
 import { useT } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
+
+interface LogState {
+  loggedKeys: Set<string>;
+  pendingKey: string | null;
+  onLog: (weekIndex: number, dayIndex: number, focus: string) => void;
+}
 
 const phaseTone: Record<string, 'success' | 'info' | 'warn' | 'default'> = {
   ACCUMULATION: 'info',
@@ -18,11 +25,45 @@ const phaseTone: Record<string, 'success' | 'info' | 'warn' | 'default'> = {
   DELOAD: 'warn',
 };
 
-/** Shared week-by-week program viewer used by both coach and client portals. */
-export function ProgramView({ programId, backHref }: { programId: string; backHref: string }) {
+/**
+ * Shared week-by-week program viewer used by both coach and client portals.
+ * When `clientId` is provided (client portal), each day shows a "Log session"
+ * button that records a completed workout.
+ */
+export function ProgramView({
+  programId,
+  backHref,
+  clientId,
+}: {
+  programId: string;
+  backHref: string;
+  clientId?: string;
+}) {
   const { t } = useT();
   const program = useQuery({ queryKey: ['program', programId], queryFn: () => Api.program(programId) });
   const [openWeek, setOpenWeek] = useState(1);
+  const [loggedKeys, setLoggedKeys] = useState<Set<string>>(new Set());
+  const [pendingKey, setPendingKey] = useState<string | null>(null);
+
+  const logWorkout = useMutation({
+    mutationFn: (v: { weekIndex: number; dayIndex: number; focus: string }) => {
+      setPendingKey(`${v.weekIndex}-${v.dayIndex}`);
+      return Api.logWorkout(clientId!, { programId, ...v });
+    },
+    onSuccess: (_r, v) => {
+      setLoggedKeys((s) => new Set(s).add(`${v.weekIndex}-${v.dayIndex}`));
+      setPendingKey(null);
+    },
+    onError: () => setPendingKey(null),
+  });
+
+  const log: LogState | undefined = clientId
+    ? {
+        loggedKeys,
+        pendingKey,
+        onLog: (weekIndex, dayIndex, focus) => logWorkout.mutate({ weekIndex, dayIndex, focus }),
+      }
+    : undefined;
 
   if (program.isLoading) return <PageLoader />;
   if (program.error || !program.data) return <p className="text-red-600">{t('pv.notFound')}</p>;
@@ -71,6 +112,7 @@ export function ProgramView({ programId, backHref }: { programId: string; backHr
             week={week}
             open={openWeek === week.weekIndex}
             onToggle={() => setOpenWeek((w) => (w === week.weekIndex ? -1 : week.weekIndex))}
+            log={log}
           />
         ))}
       </div>
@@ -78,7 +120,17 @@ export function ProgramView({ programId, backHref }: { programId: string; backHr
   );
 }
 
-function WeekRow({ week, open, onToggle }: { week: ProgramWeekFull; open: boolean; onToggle: () => void }) {
+function WeekRow({
+  week,
+  open,
+  onToggle,
+  log,
+}: {
+  week: ProgramWeekFull;
+  open: boolean;
+  onToggle: () => void;
+  log?: LogState;
+}) {
   const { t } = useT();
   return (
     <Card className={cn('overflow-hidden transition-shadow', open && 'shadow-glow')}>
@@ -148,6 +200,31 @@ function WeekRow({ week, open, onToggle }: { week: ProgramWeekFull; open: boolea
                 <p className="mt-3 rounded-lg bg-brand-50 px-3 py-2 text-xs text-brand-700">
                   {t('pv.conditioning')}: {day.payload.conditioning.join(' · ')}
                 </p>
+              ) : null}
+              {log ? (
+                (() => {
+                  const key = `${week.weekIndex}-${day.dayIndex}`;
+                  const done = log.loggedKeys.has(key);
+                  return (
+                    <Button
+                      variant={done ? 'subtle' : 'outline'}
+                      size="sm"
+                      className="mt-3 w-full"
+                      disabled={done || log.pendingKey === key}
+                      onClick={() => log.onLog(week.weekIndex, day.dayIndex, day.focus)}
+                    >
+                      {log.pendingKey === key ? (
+                        <Spinner />
+                      ) : done ? (
+                        <>
+                          <CheckCircle2 className="size-4" /> {t('pv.logged')}
+                        </>
+                      ) : (
+                        t('pv.logSession')
+                      )}
+                    </Button>
+                  );
+                })()
               ) : null}
             </div>
           ))}

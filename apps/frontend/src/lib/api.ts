@@ -264,6 +264,13 @@ export const Api = {
     body: { name: string; objectKey: string; mimeType: string; sizeBytes: number },
   ) => api<DocumentMeta>(`/clients/${clientId}/documents`, { method: 'POST', body: JSON.stringify(body) }),
 
+  // Workout logging
+  workouts: (clientId: string) => api<WorkoutLog[]>(`/clients/${clientId}/workouts`),
+  logWorkout: (
+    clientId: string,
+    body: { programId?: string; weekIndex?: number; dayIndex?: number; focus?: string; notes?: string },
+  ) => api<WorkoutLog>(`/clients/${clientId}/workouts`, { method: 'POST', body: JSON.stringify(body) }),
+
   // Coach profile / settings
   coachProfile: () => api<CoachProfile>('/coach/profile'),
   updateCoachProfile: (body: Partial<Pick<CoachProfile, 'businessName' | 'bio' | 'specialties' | 'logoKey'>>) =>
@@ -285,6 +292,16 @@ export const Api = {
       { id: string; businessName?: string; email: string; name: string; isActive: boolean; clientCount: number }[]
     >('/admin/coaches'),
 };
+
+export interface WorkoutLog {
+  id: string;
+  programId?: string | null;
+  weekIndex?: number | null;
+  dayIndex?: number | null;
+  focus?: string | null;
+  performedAt: string;
+  notes?: string | null;
+}
 
 export interface CoachProfile {
   id: string;
