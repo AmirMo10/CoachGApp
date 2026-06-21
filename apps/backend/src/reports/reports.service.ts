@@ -58,10 +58,14 @@ export class ReportsService {
       programName: program?.name,
     });
 
+    // Embed the coach's logo (object storage → base64 data URL) for the PDF header.
+    const logoDataUrl = coach?.logoKey ? await this.storage.getObjectDataUrl(coach.logoKey) : null;
+
     const data: ReportData = {
       brand: {
         businessName: coach?.businessName ?? 'Coach"G"',
         coachName: `${coach?.user?.firstName ?? ''} ${coach?.user?.lastName ?? ''}`.trim() || 'Coach',
+        logoDataUrl: logoDataUrl ?? undefined,
       },
       client: {
         fullName: `${client.firstName} ${client.lastName}`,
