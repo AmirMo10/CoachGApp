@@ -63,4 +63,22 @@ export class StorageService {
     );
     return key;
   }
+
+  /** Fetch an object's bytes + content type (used to embed the logo in reports). */
+  async getObject(key: string): Promise<{ body: Buffer; contentType: string }> {
+    const res = await this.client.send(new GetObjectCommand({ Bucket: this.bucket, Key: key }));
+    const bytes = await res.Body!.transformToByteArray();
+    return { body: Buffer.from(bytes), contentType: res.ContentType ?? 'application/octet-stream' };
+  }
+
+  /** Fetch an object and return it as a base64 data URL (or null on failure). */
+  async getObjectDataUrl(key: string): Promise<string | null> {
+    try {
+      const { body, contentType } = await this.getObject(key);
+      return `data:${contentType};base64,${body.toString('base64')}`;
+    } catch (e) {
+      this.logger.warn(`Could not load object ${key}: ${(e as Error).message}`);
+      return null;
+    }
+  }
 }
