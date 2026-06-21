@@ -23,7 +23,7 @@ import { PageLoader, Spinner } from '@/components/ui/spinner';
 import { LineChart } from '@/components/ui/line-chart';
 import { LineChart as LineIcon } from 'lucide-react';
 import { Tabs } from '@/components/ui/tabs';
-import { BloodworkPanel, MessagesPanel, DocumentsPanel, NotesPanel } from '@/components/panels';
+import { BloodworkPanel, MessagesPanel, DocumentsPanel, NotesPanel, WorkoutsPanel } from '@/components/panels';
 import { useT } from '@/lib/i18n';
 
 export default function ClientDetailPage({ params }: { params: { id: string } }) {
@@ -352,6 +352,7 @@ export default function ClientDetailPage({ params }: { params: { id: string } })
       {/* Bloodwork / Messages / Documents / Notes */}
       <Tabs
         items={[
+          { key: 'sessions', label: t('tabs.sessions'), content: <WorkoutsPanel clientId={id} /> },
           { key: 'bloodwork', label: t('tabs.bloodwork'), content: <BloodworkPanel clientId={id} canAdd /> },
           { key: 'messages', label: t('tabs.messages'), content: <MessagesPanel clientId={id} role="COACH" /> },
           { key: 'documents', label: t('tabs.documents'), content: <DocumentsPanel clientId={id} canUpload /> },
