@@ -1,28 +1,28 @@
-# Single-node / staging deployment for Coach"G" (ArvanCloud VM).
+# Application tier for Coach"G" (ArvanCloud VM / staging).
+#
+# Stateful services (PostgreSQL, Redis) live in docker-compose.data.yml on the SAME
+# external `coachg` network — they are intentionally NOT part of this stack so that
+# building/redeploying the app (or `docker compose down -v`) never risks the database.
 # For full production, prefer the Kubernetes manifests in infrastructure/kubernetes.
+#
+# ── Prerequisite: the data tier must already be running ──
+#   docker compose -f infrastructure/docker/docker-compose.data.yml --env-file ../../.env up -d
+#
+# ── Build/deploy the app (safe to rebuild and tear down repeatedly) ──
+#   docker compose -f infrastructure/docker/docker-compose.prod.yml --env-file ../../.env up -d --build
+#
+# The backend/worker reach the database via the service names `postgres` and `redis`
+# on the shared network, so DATABASE_URL / REDIS_HOST in .env use those hostnames.
+name: coachg-app
+
 services:
-  postgres:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    restart: unless-stopped
-
-  redis:
-    image: redis:7-alpine
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
-    restart: unless-stopped
-
   backend:
     build:
       context: ../..
       dockerfile: infrastructure/docker/backend.Dockerfile
     env_file: ../../.env
-    depends_on: [postgres, redis]
     restart: unless-stopped
+    networks: [coachg]
 
   worker:
     build:
@@ -30,8 +30,8 @@ services:
       dockerfile: infrastructure/docker/backend.Dockerfile
     command: ['node', 'dist/worker.js']
     env_file: ../../.env
-    depends_on: [postgres, redis]
     restart: unless-stopped
+    networks: [coachg]
 
   frontend:
     build:
@@ -40,6 +40,7 @@ services:
     env_file: ../../.env
     depends_on: [backend]
     restart: unless-stopped
+    networks: [coachg]
 
   nginx:
     image: nginx:1.27-alpine
@@ -51,6 +52,10 @@ services:
       - ./certs:/etc/letsencrypt:ro
     depends_on: [frontend, backend]
     restart: unless-stopped
+    networks: [coachg]
 
-volumes:
-  pgdata:
+# Shared with docker-compose.data.yml. Created once via `docker network create coachg`.
+networks:
+  coachg:
+    external: true
+    name: coachg

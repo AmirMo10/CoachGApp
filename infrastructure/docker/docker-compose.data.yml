@@ -1,0 +1,61 @@
+# Stateful data tier for Coach"G" — PostgreSQL + Redis.
+#
+# Deliberately SEPARATE from the application stack (docker-compose.prod.yml) so that
+# building/redeploying the app never touches the database. The data volumes and the
+# shared network are declared EXTERNAL, which means `docker compose down -v` on EITHER
+# stack cannot delete them — Compose refuses to remove external volumes. Data survives
+# every app rebuild, teardown, and `down -v`.
+#
+# ── One-time bootstrap (run once per host) ──
+#   docker network create coachg
+#   docker volume create coachg_pgdata
+#   docker volume create coachg_redisdata
+#
+# ── Bring the data tier up (rarely restarted) ──
+#   docker compose -f infrastructure/docker/docker-compose.data.yml --env-file ../../.env up -d
+#
+# To intentionally destroy data you must remove the external volumes by hand:
+#   docker volume rm coachg_pgdata coachg_redisdata
+name: coachg-data
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks: [coachg]
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redisdata:/data
+    restart: unless-stopped
+    networks: [coachg]
+
+# External volumes: created once via `docker volume create` and never removed by
+# `docker compose down -v`. This is the safeguard against accidental data loss.
+volumes:
+  pgdata:
+    external: true
+    name: coachg_pgdata
+  redisdata:
+    external: true
+    name: coachg_redisdata
+
+# Shared with the application stack so the backend/worker reach `postgres` and `redis`
+# by service name. Created once via `docker network create coachg`.
+networks:
+  coachg:
+    external: true
+    name: coachg
