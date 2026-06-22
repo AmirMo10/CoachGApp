@@ -6,8 +6,15 @@ Coach"G" is designed for **self-hosting on ArvanCloud**. No AWS-managed services
 | Env | Orchestration | Notes |
 | --- | ------------- | ----- |
 | Local dev | Docker Compose (`docker-compose.dev.yml`) | Postgres, Redis, Keycloak, MinIO |
-| Staging | Docker Compose (`docker-compose.prod.yml`) | Single node, Nginx + Let's Encrypt |
+| Staging | Docker Compose (`docker-compose.data.yml` + `docker-compose.prod.yml`) | Data tier and app tier are **separate stacks** so app rebuilds never touch the DB; Nginx + Let's Encrypt |
 | Production | Kubernetes (`infrastructure/kubernetes`) | ArvanCloud managed K8s, horizontal scaling |
+
+> **Data safety:** On the single-node/staging setup, PostgreSQL and Redis live in a
+> dedicated stack (`docker-compose.data.yml`) with **external** volumes and an external
+> shared network. Because Compose refuses to remove external volumes, `docker compose
+> down -v` on the app stack — or any rebuild — cannot delete the database. The two
+> stacks communicate over the shared `coachg` network using the service names
+> `postgres` and `redis`.
 
 ## 1. Local development
 ```bash
@@ -34,6 +41,32 @@ docker push registry.arvancloud.ir/coachg/backend:$TAG
 docker push registry.arvancloud.ir/coachg/frontend:$TAG
 ```
 CI/CD (GitHub Actions, `.github/workflows/ci.yml`) lints, tests, builds, and pushes on tag.
+
+## 3a. Single-node / staging via Docker Compose
+The data tier and the application tier are **separate stacks** so that redeploying or
+rebuilding the app can never destroy the database.
+
+```bash
+# One-time host bootstrap: create the shared network and the persistent (external) volumes.
+docker network create coachg
+docker volume create coachg_pgdata
+docker volume create coachg_redisdata
+
+# 1) Bring up the long-lived data tier (Postgres + Redis). Rarely restarted.
+docker compose -f infrastructure/docker/docker-compose.data.yml --env-file ../../.env up -d
+
+# 2) Build & deploy the app tier. Safe to repeat on every release — DB is untouched.
+docker compose -f infrastructure/docker/docker-compose.prod.yml --env-file ../../.env up -d --build
+```
+
+Redeploying the app is just step 2 again (optionally `down` first):
+```bash
+docker compose -f infrastructure/docker/docker-compose.prod.yml down        # app only; data tier keeps running
+docker compose -f infrastructure/docker/docker-compose.prod.yml up -d --build
+```
+Even `docker compose -f docker-compose.prod.yml down -v` is safe: the database volumes
+are external and live in the data stack. To intentionally wipe data you must remove the
+volumes explicitly: `docker volume rm coachg_pgdata coachg_redisdata`.
 
 ## 4. Kubernetes deploy
 ```bash
